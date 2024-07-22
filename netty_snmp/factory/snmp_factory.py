@@ -132,6 +132,11 @@ class SnmpFactory:
 
     @property
     def entities(self) -> Any:
+        """
+        collect entities via `ENTITY-MIB`
+        basically: chassis(3) should be the main module of device.
+        but fuck huawei (3 or 9(module) for different product lines) because its unstandard implementation
+        """
         entities_oids = [
             consts.entPhysicalClass.oid,
             consts.entPhysicalDescr.oid,
@@ -153,6 +158,13 @@ class SnmpFactory:
 
     @property
     def routes(self) -> Any: ...
+
+    @property
+    def mac_address_table(self) -> Any: ...
+
+    @property
+    def arp_table(self) -> Any: ...
+
 
     def discovery(self) -> dict:
         return {

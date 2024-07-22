@@ -433,3 +433,35 @@ cswSwitchMacAddress = SnmpItem(
     value_type="str",
     value_mapping=None,
 )
+
+
+panSysSwVersion = SnmpItem(
+    name="panSysSwVersion",
+    oid="1.3.6.1.4.1.25461.2.1.2.1.1",
+    description="The version of the PAN-OS software.",
+    value_type="str",
+    value_mapping=None,
+)
+panSysSerialNumber = SnmpItem(
+    name="panSysSerialNumber",
+    oid="1.3.6.1.4.1.25461.2.1.2.1.3",
+    description="The serial number of the PAN-OS.",
+    value_type="str",
+    value_mapping=None,
+)
+
+sysExtSwitchSWVersion = SnmpItem(
+    name="sysExtSwitchSWVersion",
+    oid="1.3.6.1.4.1.14823.2.2.1.2.1.19.1.4",
+    description="The version of the external switch software.",
+    value_type="str",
+    value_mapping=None,
+)
+
+sysExtSwitchSetNo = SnmpItem(
+    name="sysExtSwitchSetNo",
+    oid="1.3.6.1.4.1.14823.2.2.1.2.1.19.1.7",
+    description="The serial number of the external switch.",
+    value_type="str",
+    value_mapping=None,
+)

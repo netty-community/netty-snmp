@@ -13,3 +13,7 @@ class H3cSnmpFactory(SnmpFactory):
         model: str | None = None,
     ) -> None:
         super().__init__(ip, port, version, community, v3_params, model)
+
+    @property
+    def version(self):
+        return self.session.get()
