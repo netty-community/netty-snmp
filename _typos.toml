@@ -1,0 +1,10 @@
+[files]
+extend-exclude = [
+    "*.json",
+    "netty-snmp/device_type/manufactures/*.py",
+]
+[default]
+extend-ignore-identifiers-re = [
+    "selectin",
+    "equipments",
+]

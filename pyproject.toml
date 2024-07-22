@@ -1,0 +1,116 @@
+[project]
+name = "netty-snmp"
+version = "0.1.0"
+description = "Add your description here"
+authors = [
+    { name = "jeffry", email = "182467653@qq.com" }
+]
+dependencies = [
+    "tcppinglib>=2.0.3",
+    "ezsnmp>=1.0.0rc2",
+    "pandas>=2.2.2",
+    "icmplib>=3.0.4",
+]
+readme = "README.md"
+requires-python = ">= 3.8"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+dev-dependencies = [
+    "pytest>=8.3.1",
+    "pre-commit>=3.7.1",
+    "pytest-cov>=5.0.0",
+    "pytest-sugar>=1.0.0",
+    "pytest-tldr>=0.2.5",
+]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["netty-snmp"]
+
+[tool.ruff]
+line-length = 120
+indent-width = 4
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "D",
+    "G002",
+    "DTZ003",
+    "ANN401",
+    "ANN101",
+    "ANN102",
+    "EM101",
+    "PD901",
+    "COM812",
+    "ISC001",
+    "FBT",
+    "A003",
+    "PLR0913",
+    "G004",
+    "E501",
+    "TRY003",
+    "EM102"
+]
+fixable = ["ALL"]
+
+[tool.ruff.lint.extend-per-file-ignores]
+"tests/*.py" = ["S101", "ANN201", "PLR2004", "ANN001"]
+"*exceptions.py" = ["ARG001"]
+"__init__.py" = ["F403", "F401"]
+"consts.py" = ["N816"]
+
+
+[tool.pytest.ini_options]
+addopts = "--cov-report term --cov-config=.coveragerc -W ignore --cov=src -v"
+xfail_strict = true
+asyncio_mode = "auto"
+markers = ["pytest.mark.asyncio"]
+testpaths = ["tests"]
+
+[tool.coverage.report]
+skip_empty = true
+skip_covered = true
+precision = 2
+omit = ["*/__init__.py", "*/consts.py"]
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplentmentError",
+    "if TYPE_CHECKING:",
+    "if typing.TYPE_CHECKING",
+    "@overload",
+    "@typing.overload",
+    "assert_never",
+    "typing.assert_never",
+]
+
+[tool.coverage.run]
+concurrency = ["thread"]
+
+[tool.mypy]
+exclude = "^tools/.*"
+plugins = ["pydantic.mypy"]
+
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unused_configs = true
+warn_unreachable = true
+warn_return_any = true
+strict = true
+disallow_untyped_decorators = true
+disallow_any_generics = false
+implicit_reexport = false
+show_error_codes = true
+
+[tool.pyright]
+include = ["netty", "tests", "examples"]
+reportIncompatibleVariableOverride = false
+pythonVersion = "3.12"
