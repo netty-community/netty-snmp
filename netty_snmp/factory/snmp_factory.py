@@ -100,8 +100,7 @@ class SnmpFactory:
         collect chasis id via `LLDP-MIB`.
         Special configuration for Huawei: snmp should include iso view and mib-2
         """
-        #  lldpLocChassisId  = "1.0.8802.1.1.2.1.3.2"
-        # return self.session.get(lldpLocChassisId).value
+        return self.session.get(consts.lldpLocChassisId.oid).value
 
     @property
     def interfaces(self) -> dict:
@@ -119,7 +118,7 @@ class SnmpFactory:
 
     @property
     def lldp_neighbors(self) -> Any:
-        local_if_index = self.session.get_bulk(consts.lldpLocalPortId.oid)
+        # local_if_index = self.session.get_bulk(consts.lldpLocalPortId.oid)  # noqa: ERA001
         lldp_oids = [
             consts.lldpRemChassisIdSubtype,
             consts.lldpRemChassisId,
@@ -165,7 +164,6 @@ class SnmpFactory:
     @property
     def arp_table(self) -> Any: ...
 
-
     def discovery(self) -> dict:
         return {
             "hostname": self._hostname,
@@ -177,4 +175,28 @@ class SnmpFactory:
             "vlans": self.vlans,
             "prefixes": self.prefixes,
             "routes": self.routes,
+            "entities": self.entities,
+            "mac_address_table": self.mac_address_table,
+            "arp_table": self.arp_table,
         }
+
+    def discovery_choices(
+        self,
+        choices: list[
+            Literal[
+                "hostname",
+                "chassis_id",
+                "uptime",
+                "interfaces",
+                "lldp_neighbors",
+                "stack",
+                "vlans",
+                "prefixes",
+                "routes",
+                "entities",
+                "mac_address_table",
+                "arp_table",
+            ]
+        ],
+    )->dict:
+        return {x: getattr(self, x) for x in choices}
