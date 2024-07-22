@@ -198,5 +198,5 @@ class SnmpFactory:
                 "arp_table",
             ]
         ],
-    )->dict:
+    ) -> dict:
         return {x: getattr(self, x) for x in choices}
