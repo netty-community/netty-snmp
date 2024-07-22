@@ -39,12 +39,14 @@ class SnmpFactory:
         version: consts.SnmpVersion = consts.SnmpVersion.v2c,
         community: str | None = consts.SNMP_DEFAULT_COMMUNITY,
         v3_params: SnmpV3Params | None = None,
+        model: str | None = None,
     ) -> None:
         self.ip = ip
         self.port = port
         self.version = version
         self.community = community
         self.v3_params = v3_params
+        self.model = model
 
     @property
     def _ping(self) -> bool:
@@ -67,7 +69,7 @@ class SnmpFactory:
         results = self.session.get_bulk([item.oid for item in items])
         dfs = [[result.oid_index, oid_mapping[result.oid]["name"], result.value] for result in results]
         df = pd.DataFrame(dfs, columns=["snmp_index", "name", "value"])
-        return df.pivot(index="snmp_index", columns="name", values="value")
+        return df.pivot_table(index="snmp_index", columns="name", values="value")
 
     def _close(self) -> None:
         if not self.session:
@@ -93,10 +95,6 @@ class SnmpFactory:
         return self.session.get(consts.sysUpTime.oid).value
 
     @property
-    def version(self) -> str:
-        pass
-
-    @property
     def _chasis_id(self) -> Any:
         """
         collect chasis id via `LLDP-MIB`.
@@ -106,10 +104,6 @@ class SnmpFactory:
         # return self.session.get(lldpLocChassisId).value
 
     @property
-    def serial_number(self) -> Any:
-        pass
-
-    @property
     def interfaces(self) -> dict:
         interface_oids = [
             consts.ifIndex.oid,
@@ -117,7 +111,7 @@ class SnmpFactory:
             consts.ifType.oid,
             consts.ifMtu.oid,
             consts.ifSpeed.oid,
-            consts.ifPhysAddress.oid,
+            consts.ifPhysAddr.oid,
             consts.ifAdminStatus.oid,
             consts.ifOperStatus.oid,
         ]
@@ -137,26 +131,34 @@ class SnmpFactory:
         return self._snmp_discovery_df(lldp_oids).to_dict(orient="records")
 
     @property
-    def stack(self) -> Any:
-        pass
+    def entities(self) -> Any:
+        entities_oids = [
+            consts.entPhysicalClass.oid,
+            consts.entPhysicalDescr.oid,
+            consts.entPhysicalName.oid,
+            consts.entPhysicalFirmwareRev,
+            consts.entPhysicalHardwareRev,
+            consts.entPhysicalSerialNum,
+        ]
+        return self._snmp_discovery_df(entities_oids).to_dict(orient="records")
 
     @property
-    def vlans(self) -> Any:
-        pass
+    def stack(self) -> Any: ...
 
     @property
-    def prefixes(self) -> Any:
-        pass
+    def vlans(self) -> Any: ...
 
     @property
-    def routes(self) -> Any:
-        pass
+    def prefixes(self) -> Any: ...
+
+    @property
+    def routes(self) -> Any: ...
 
     def discovery(self) -> dict:
         return {
             "hostname": self._hostname,
             "chassis_id": self.chasis_id,
-            "uptime": self.sys_up_time,
+            "uptime": self.uptime,
             "interfaces": self.interfaces,
             "lldp_neighbors": self.lldp_neighbors,
             "stack": self.stack,

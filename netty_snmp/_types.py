@@ -1,4 +1,7 @@
-from typing import NamedTuple, TypedDict
+from ipaddress import IPv4Network, IPv6Network
+from typing import Literal, NamedTuple, TypedDict
+
+type IPvANyNetwork = IPv4Network | IPv6Network
 
 
 class DeviceType(TypedDict):
@@ -12,6 +15,19 @@ class SnmpDiscovery(NamedTuple):
     oid: str
     snmp_index: str
     snmp_value: str | float | int
+
+
+class SnmpItem(NamedTuple):
+    name: str
+    oid: str
+    description: str | None = None
+    value_type: Literal["str", "int", "float"]
+    value_mapping: dict[int, str] | None = None
+    to_hex: bool = False
+
+    def get_value_type(self) -> str | int | float:
+        type_mapping = {"str": str, "int": int, "float": float}
+        return type_mapping[self.value_type]
 
 
 class Interface(TypedDict):

@@ -1,5 +1,6 @@
 from enum import IntEnum
-from typing import Literal, NamedTuple
+
+from netty_snmp._types import SnmpItem
 
 SNMP_DEFAULT_PORT = 161
 SNMP_DEFAULT_COMMUNITY = "public"
@@ -19,19 +20,6 @@ class StackRole(IntEnum):
     Member = 2
     NotMember = 3
     StandBy = 4
-
-
-class SnmpItem(NamedTuple):
-    name: str
-    oid: str
-    description: str | None = None
-    value_type: Literal["str", "int", "float"]
-    value_mapping: dict[int, str] | None = None
-    to_hex: bool = False
-
-    def get_value_type(self) -> str | int | float:
-        type_mapping = {"str": str, "int": int, "float": float}
-        return type_mapping[self.value_type]
 
 
 INTERFACE_STATUS_MAPPING = {1: "up", 2: "down", 3: "testing"}
@@ -70,6 +58,9 @@ ENTITY_PHYSICAL_CLASS_MAPPING = {
     11: "Stack",
     12: "CPU",
 }
+
+HW_STACK_RUN_MAPPING = {1: "enable", 2: "disable"}
+HW_STACK_ROLE_MAPPING = {1: "master", 2: "backup", 3: "slave"}
 
 
 # ---------- system ---------- #
@@ -319,6 +310,126 @@ entPhysicalSerialNum = SnmpItem(
     name="entPhysicalSerialNum",
     oid="1.3.6.1.2.1.47.1.1.1.1.11",
     description="The serial number of the physical entity.",
+    value_type="str",
+    value_mapping=None,
+)
+
+
+#  -------- stack -------- #
+
+#   # -------Huawei stack------- #
+
+hwStackRun = SnmpItem(
+    name="hwStackRun",
+    oid="1.3.6.1.4.1.2011.5.25.183.1.1",
+    description="The running status of the Huawei stack.",
+    value_type="int",
+    value_mapping=HW_STACK_RUN_MAPPING,
+)
+hwMemberCurrentStackId = SnmpItem(
+    name="hwMemberCurrentStackId",
+    oid="1.3.6.1.4.1.2011.5.25.183.1.20.1.1",
+    description="The current stack ID of the Huawei stack member.",
+    value_type="int",  # 0-8
+    value_mapping=None,
+)
+hwMemberStackPriority = SnmpItem(
+    name="hwMemberStackPriority",
+    oid="1.3.6.1.4.1.2011.5.25.183.1.20.1.2",
+    description="The priority of the Huawei stack member.",
+    value_type="int",  # 1-255
+    value_mapping=None,
+)
+hwMemberStackRole = SnmpItem(
+    name="hwMemberStackRole",
+    oid="1.3.6.1.4.1.2011.5.25.183.1.20.1.3",
+    description="The role of the Huawei stack member.",
+    value_type="int",  # 1-4
+    value_mapping=HW_STACK_ROLE_MAPPING,
+)
+hwMemberStackMacAddress = SnmpItem(
+    name="hwMemberStackMacAddress",
+    oid="1.3.6.1.4.1.2011.5.25.183.1.20.1.4",
+    description="The MAC address of the Huawei stack member.",
+    value_type="str",
+    value_mapping=None,
+)
+hwMemberStackDeviceType = SnmpItem(
+    name="hwMemberStackDeviceType",
+    oid="1.3.6.1.4.1.2011.5.25.183.1.20.1.5",
+    description="The device type of the Huawei stack member.",
+    value_type="str",
+    value_mapping=None,
+)
+
+#   # -------Huawei CSS stack------- #
+
+hwCssEnable = SnmpItem(
+    name="hwCssEnable",
+    oid="1.3.6.1.4.1.2011.5.25.183.1.1",
+    description="The enable status of the Huawei CSS stack.",
+    value_type="int",
+    value_mapping=HW_STACK_RUN_MAPPING,
+)
+
+hwCssMemberFrameId = SnmpItem(
+    name="hwCssMemberFrameId",
+    oid="1.3.6.1.4.1.2011.5.25.183.3.2.1.1",
+    description="The frame ID of the Huawei CSS stack member.",
+    value_type="int",
+    value_mapping=None,
+)
+hwCssMemberRole = SnmpItem(
+    name="hwCssMemberRole",
+    oid="1.3.6.1.4.1.2011.5.25.183.3.2.1.8",
+    description="The role of the Huawei CSS stack member.",
+    value_type="int",
+    value_mapping=HW_STACK_ROLE_MAPPING,
+)
+
+hwCssMemberPriority = SnmpItem(
+    name="hwCssMemberPriority",
+    oid="1.3.6.1.4.1.2011.5.25.183.3.2.1.3",
+    description="The priority of the Huawei CSS stack member.",
+    value_type="int",
+    value_mapping=None,
+)
+hwCssMemberConfigPriority = SnmpItem(
+    name="hwCssMemberConfigPriority",
+    oid="1.3.6.1.4.1.2011.5.25.183.3.2.1.4",
+    description="The config priority of the Huawei CSS stack member.",
+    value_type="int",
+    value_mapping=None,
+)
+
+# -------- stack Cisco ------- #
+cswSwitchRole = SnmpItem(
+    name="cswSwitchRole",
+    oid="1.3.6.1.4.1.9.9.500.1.2.1.1.3",
+    description="The role of the Cisco switch.",
+    value_type="int",
+    value_mapping=HW_STACK_ROLE_MAPPING,
+)
+
+cswSwitchHwPriority = SnmpItem(
+    name="cswSwitchHwPriority",
+    oid="1.3.6.1.4.1.9.9.500.1.2.1.1.5",
+    description="The hardware priority of the Cisco switch.",
+    value_type="int",
+    value_mapping=None,
+)
+cswSwitchState = SnmpItem(
+    name="cswSwitchState",
+    oid="1.3.6.1.4.1.9.9.500.1.2.1.1.6",
+    description="The state of the Cisco switch.",
+    value_type="int",
+    value_mapping=HW_STACK_RUN_MAPPING,
+)
+
+cswSwitchMacAddress = SnmpItem(
+    name="cswSwitchMacAddress",
+    oid="1.3.6.1.4.1.9.9.500.1.2.1.1.7",
+    description="The MAC address of the Cisco switch.",
     value_type="str",
     value_mapping=None,
 )

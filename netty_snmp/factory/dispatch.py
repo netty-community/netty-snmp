@@ -5,7 +5,7 @@ from ezsnmp import EzSNMPError, Session
 from icmplib import ping
 from tcppinglib import tcpping
 
-from netty_snmp._types import DeviceType, DiscoveryData, DiscoveryResponse
+from netty_snmp._types import DeviceType, DiscoveryData, DiscoveryResponse, IPvANyNetwork
 from netty_snmp.device_type.device_types import Platform, get_device_type
 from netty_snmp.factory import consts
 from netty_snmp.factory.manufactures.arista import AristaSnmpFactory
@@ -52,12 +52,23 @@ class DispatchSnmpFactory:
         v3_params: SnmpV3Params | None = None,
         max_workers: int = 16,
     ) -> None:
-        self.prefix = ip_network(prefix)
+        self.prefix = self.str_to_prefix(prefix)
         self.port = port
         self.version = version
         self.community = community
         self.v3_params = v3_params
         self.max_workers = max_workers
+
+    def str_to_prefix(self, prefix: str) -> IPvANyNetwork:
+        if "/" not in prefix:
+            if ":" in prefix or "::" in prefix:
+                prefix += "/128"
+            else:
+                prefix += "/32"
+        try:
+            return ip_network(prefix)
+        except ValueError as e:
+            raise ValueError(f"Invalid ip prefix: {prefix}") from e
 
     def snmp_reachable(self, session: Session) -> bool:
         try:
@@ -82,14 +93,17 @@ class DispatchSnmpFactory:
             )
         return device_type
 
-    def _dispatch(self, ip: str) -> DiscoveryResponse:
+    def get_snmp_session(self, ip: str) -> Session:
         if self.version == consts.SnmpVersion.v2c:
             session = Session(
                 hostname=ip, remote_port=self.port, community=self.community, version=consts.SnmpVersion.v2c
             )
         if self.version == consts.SnmpVersion.v3:
             session = Session(hostname=ip, remote_port=self.port, version=consts.SnmpVersion.v3, **self.v3_params)
+        return session
 
+    def _dispatch(self, ip: str) -> DiscoveryResponse:
+        session = self.get_snmp_session(ip)
         icmp_reachable = ping(ip, count=2, interval=0.2, timeout=1, privileged=False).is_alive
         ssh_reachable = tcpping(ip, port=22, timeout=1, count=2, interval=0.2).is_alive
         snmp_reachable = self.snmp_reachable(session)

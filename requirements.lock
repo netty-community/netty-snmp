@@ -11,13 +11,15 @@
 
 -e file:.
 ezsnmp==1.0.0rc2
-    # via netty
+    # via netty-snmp
+gufo-snmp==0.5.1
+    # via netty-snmp
 icmplib==3.0.4
-    # via netty
+    # via netty-snmp
 numpy==2.0.1
     # via pandas
 pandas==2.2.2
-    # via netty
+    # via netty-snmp
 python-dateutil==2.9.0.post0
     # via pandas
 pytz==2024.1
@@ -25,6 +27,6 @@ pytz==2024.1
 six==1.16.0
     # via python-dateutil
 tcppinglib==2.0.3
-    # via netty
+    # via netty-snmp
 tzdata==2024.1
     # via pandas

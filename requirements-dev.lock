@@ -17,11 +17,13 @@ coverage==7.6.0
 distlib==0.3.8
     # via virtualenv
 ezsnmp==1.0.0rc2
-    # via netty
+    # via netty-snmp
 filelock==3.15.4
     # via virtualenv
+gufo-snmp==0.5.1
+    # via netty-snmp
 icmplib==3.0.4
-    # via netty
+    # via netty-snmp
 identify==2.6.0
     # via pre-commit
 iniconfig==2.0.0
@@ -34,7 +36,7 @@ packaging==24.1
     # via pytest
     # via pytest-sugar
 pandas==2.2.2
-    # via netty
+    # via netty-snmp
 platformdirs==4.2.2
     # via virtualenv
 pluggy==1.5.0
@@ -56,7 +58,7 @@ pyyaml==6.0.1
 six==1.16.0
     # via python-dateutil
 tcppinglib==2.0.3
-    # via netty
+    # via netty-snmp
 termcolor==2.4.0
     # via pytest-sugar
 tzdata==2024.1
