@@ -1,8 +1,8 @@
-from netty.factory import consts
-from netty.factory.snmp_factory import SnmpFactory, SnmpV3Params
+from netty_snmp.factory import consts
+from netty_snmp.factory.snmp_factory import SnmpFactory, SnmpV3Params
 
 
-class HuaweiSnmpFactory(SnmpFactory):
+class AristaSnmpFactory(SnmpFactory):
     def __init__(
         self,
         ip: str,

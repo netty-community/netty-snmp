@@ -3,8 +3,9 @@ from typing import Any, Literal, TypedDict
 
 import pandas as pd
 from ezsnmp import Session
-from netty.factory import consts
 from tcppinglib import tcpping
+
+from netty_snmp.factory import consts
 
 
 class SnmpVersionError(Exception):

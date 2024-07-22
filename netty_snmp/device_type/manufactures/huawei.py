@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from netty._types import DeviceType
+    from netty_snmp._types import DeviceType
 
 HUAWEI_DEVICE_TYPES: dict[str, "DeviceType"] = {
     "1.3.6.1.4.1.2011.1.1.1.11812": {"manufacturer": "Huawei", "platform": "huawei", "model": "AR18-12"},

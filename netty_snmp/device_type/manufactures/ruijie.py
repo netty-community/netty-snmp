@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from netty._types import DeviceType
+    from netty_snmp._types import DeviceType
 
 RUIJIE_DEVICE_TYPES: dict[str, "DeviceType"] = {
     "1.3.6.1.4.1.4881.1.1.10.1.1": {"manufacturer": "Ruijie", "platform": "ruijie_os", "model": "S2126G"},

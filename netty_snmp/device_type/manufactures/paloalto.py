@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from netty._types import DeviceType
+    from netty_snmp._types import DeviceType
 
 PALOALTO_DEVICE_TYPES: dict[str, "DeviceType"] = {
     "1.3.6.1.4.1.25461.2.3.1": {"manufacturer": "Palo Alto", "platform": "paloalto_panos", "model": "PA-4050"},

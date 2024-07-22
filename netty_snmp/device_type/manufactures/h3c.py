@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from netty._types import DeviceType
+    from netty_snmp._types import DeviceType
 
 H3C_DEVICE_TYPES: dict[str, "DeviceType"] = {
     "1.3.6.1.4.1.25506.1.1": {"manufacturer": "H3C", "platform": "hp_comware", "model": "S5500-28C-EI"},

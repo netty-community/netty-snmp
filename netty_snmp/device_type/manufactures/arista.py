@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from netty._types import DeviceType
+    from netty_snmp._types import DeviceType
 
 ARISTA_DEVICE_TYPES: dict[str, "DeviceType"] = {
     "1.3.6.1.4.1.30065.1.2546.720.858.48.207.2": {

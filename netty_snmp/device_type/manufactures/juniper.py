@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from netty._types import DeviceType
+    from netty_snmp._types import DeviceType
 
 JUNIPER_DEVICE_TYPES: dict[str, "DeviceType"] = {
     "1.3.6.1.4.1.2636.1.1.1.1.1": {"manufacturer": "Juniper", "platform": "juniper_junos", "model": "M40"},

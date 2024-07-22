@@ -1,7 +1,7 @@
 [files]
 extend-exclude = [
     "*.json",
-    "netty-snmp/device_type/manufactures/*.py",
+    "netty_snmp/device_type/manufactures/*.py",
 ]
 [default]
 extend-ignore-identifiers-re = [

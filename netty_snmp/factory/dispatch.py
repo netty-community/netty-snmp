@@ -3,20 +3,21 @@ from ipaddress import ip_network
 
 from ezsnmp import EzSNMPError, Session
 from icmplib import ping
-from netty._types import DeviceType, DiscoveryData, DiscoveryResponse
-from netty.device_type.device_types import Platform, get_device_type
-from netty.factory import consts
-from netty.factory.manufactures.arista import AristaSnmpFactory
-from netty.factory.manufactures.aruba import ArubaSnmpFactory
-from netty.factory.manufactures.cisco import CiscoSnmpFactory
-from netty.factory.manufactures.fortinet import FortinetSnmpFactory
-from netty.factory.manufactures.h3c import H3cSnmpFactory
-from netty.factory.manufactures.huawei import HuaweiSnmpFactory
-from netty.factory.manufactures.juniper import JuniperSnmpFactory
-from netty.factory.manufactures.paloalto import PaloaltoSnmpFactory
-from netty.factory.manufactures.ruijie import RuijieSnmpFactory
-from netty.factory.snmp_factory import SnmpFactory, SnmpV3Params
 from tcppinglib import tcpping
+
+from netty_snmp._types import DeviceType, DiscoveryData, DiscoveryResponse
+from netty_snmp.device_type.device_types import Platform, get_device_type
+from netty_snmp.factory import consts
+from netty_snmp.factory.manufactures.arista import AristaSnmpFactory
+from netty_snmp.factory.manufactures.aruba import ArubaSnmpFactory
+from netty_snmp.factory.manufactures.cisco import CiscoSnmpFactory
+from netty_snmp.factory.manufactures.fortinet import FortinetSnmpFactory
+from netty_snmp.factory.manufactures.h3c import H3cSnmpFactory
+from netty_snmp.factory.manufactures.huawei import HuaweiSnmpFactory
+from netty_snmp.factory.manufactures.juniper import JuniperSnmpFactory
+from netty_snmp.factory.manufactures.paloalto import PaloaltoSnmpFactory
+from netty_snmp.factory.manufactures.ruijie import RuijieSnmpFactory
+from netty_snmp.factory.snmp_factory import SnmpFactory, SnmpV3Params
 
 
 def get_factory(platform: Platform) -> type[SnmpFactory]:

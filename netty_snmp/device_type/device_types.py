@@ -1,15 +1,15 @@
 from enum import StrEnum
 
-from netty._types import DeviceType
-from netty.device_type.manufactures.arista import ARISTA_DEVICE_TYPES
-from netty.device_type.manufactures.aruba import ARUBA_DEVICE_TYPES
-from netty.device_type.manufactures.cisco import CISCO_DEVICE_TYPES
-from netty.device_type.manufactures.fortinet import FORTINET_DEVICE_TYPES
-from netty.device_type.manufactures.h3c import H3C_DEVICE_TYPES
-from netty.device_type.manufactures.huawei import HUAWEI_DEVICE_TYPES
-from netty.device_type.manufactures.juniper import JUNIPER_DEVICE_TYPES
-from netty.device_type.manufactures.paloalto import PALOALTO_DEVICE_TYPES
-from netty.device_type.manufactures.ruijie import RUIJIE_DEVICE_TYPES
+from netty_snmp._types import DeviceType
+from netty_snmp.device_type.manufactures.arista import ARISTA_DEVICE_TYPES
+from netty_snmp.device_type.manufactures.aruba import ARUBA_DEVICE_TYPES
+from netty_snmp.device_type.manufactures.cisco import CISCO_DEVICE_TYPES
+from netty_snmp.device_type.manufactures.fortinet import FORTINET_DEVICE_TYPES
+from netty_snmp.device_type.manufactures.h3c import H3C_DEVICE_TYPES
+from netty_snmp.device_type.manufactures.huawei import HUAWEI_DEVICE_TYPES
+from netty_snmp.device_type.manufactures.juniper import JUNIPER_DEVICE_TYPES
+from netty_snmp.device_type.manufactures.paloalto import PALOALTO_DEVICE_TYPES
+from netty_snmp.device_type.manufactures.ruijie import RUIJIE_DEVICE_TYPES
 
 
 class Manufacturer(StrEnum):

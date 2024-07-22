@@ -1,5 +1,5 @@
-from netty.factory import consts
-from netty.factory.snmp_factory import SnmpFactory, SnmpV3Params
+from netty_snmp.factory import consts
+from netty_snmp.factory.snmp_factory import SnmpFactory, SnmpV3Params
 
 
 class CiscoSnmpFactory(SnmpFactory):
@@ -13,5 +13,3 @@ class CiscoSnmpFactory(SnmpFactory):
     ) -> None:
         super().__init__(ip, port, version, community, v3_params)
 
-    def __entity_index():
-        result = []

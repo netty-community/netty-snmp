@@ -32,7 +32,7 @@ dev-dependencies = [
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["netty-snmp"]
+packages = ["netty_snmp"]
 
 [tool.ruff]
 line-length = 120

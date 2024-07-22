@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from netty._types import DeviceType
+    from netty_snmp._types import DeviceType
 
 ARUBA_DEVICE_TYPES: dict[str, "DeviceType"] = {
     "1.3.6.1.4.1.14823.1.1.1": {"manufacturer": "Aruba", "platform": "aruba_os", "model": "5000"},
