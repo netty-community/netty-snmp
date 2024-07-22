@@ -89,10 +89,15 @@ def _forecast_platform(device_type: DeviceType) -> Platform:
             device_type["platform"] = Platform.CiscoIOSXE
         elif device_type["model"].startswith("N"):
             device_type["platform"] = Platform.CiscoNexusOS
-        elif device_type["model"].startswith("I"):
+        elif device_type["model"].lower().startswith("isr"):
             device_type["platform"] = Platform.CiscoIOSXR
         else:
             device_type["platform"] = Platform.CiscoIOS
+    if device_type["manufacturer"] == Manufacturer.Huawei:
+        if device_type["model"].startswith("CE") or device_type["model"].startswith("FM"):
+            device_type["platform"] = Platform.HuaweiVRPV8
+        else:
+            device_type["platform"] = Platform.HuaweiVRP
     device_type["platform"] = ManufacturerDefaultPlatform[device_type["manufacturer"]]
 
     return device_type["platform"]
