@@ -20,8 +20,8 @@ class SnmpDiscovery(NamedTuple):
 class SnmpItem(NamedTuple):
     name: str
     oid: str
-    description: str | None = None
     value_type: Literal["str", "int", "float"]
+    description: str | None = None
     value_mapping: dict[int, str] | None = None
     to_hex: bool = False
 
@@ -67,7 +67,7 @@ class DiscoveryData(TypedDict):
 
 class DiscoveryResponse(TypedDict):
     ip: str
-    data: DiscoveryData
+    data: DiscoveryData | None
     snmp_reachable: bool
     icmp_reachable: bool
     ssh_reachable: bool

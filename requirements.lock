@@ -12,8 +12,6 @@
 -e file:.
 ezsnmp==1.0.0rc2
     # via netty-snmp
-gufo-snmp==0.5.1
-    # via netty-snmp
 icmplib==3.0.4
     # via netty-snmp
 numpy==2.0.1

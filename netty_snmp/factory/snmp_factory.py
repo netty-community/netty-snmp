@@ -23,13 +23,13 @@ class SnmpV3Params(TypedDict):
     auth_protocol: Literal["md5", "sha1", "sha224", "sha256", "sha384", "sha512"]
     auth_password: str
     privacy_protocol: Literal["des", "aes128", "aes192", "aes256"]
-    privacy_passphrase: str
+    privacy_password: str
 
 
 class SnmpFactory:
     session: Session | None = None
     hostname: str | None = None
-    chasis_id: str | None = None
+    chassis_id: str | None = None
     sys_object_id: str | None = None
 
     def __init__(
@@ -56,11 +56,11 @@ class SnmpFactory:
         if not self._ping:
             raise SnmpConnectionError(f"Failed to connect to SNMP port: {self.ip}:{self.port}")
 
-        if self.version == consts.SnmpVersion.v2c:
+        if self.version == consts.SnmpVersion.v2c and self.community:
             return Session(
                 hostname=self.ip, remote_port=self.port, community=self.community, version=consts.SnmpVersion.v2c
             )
-        if self.version == consts.SnmpVersion.v3:
+        if self.version == consts.SnmpVersion.v3 and self.v3_params:
             return Session(hostname=self.ip, remote_port=self.port, version=consts.SnmpVersion.v3, **self.v3_params)
         raise SnmpVersionError(f"Unsupported SNMP version: {self.version}")
 
@@ -84,7 +84,7 @@ class SnmpFactory:
     def __exit__(
         self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: TracebackType | None
     ) -> None:
-        self.close()
+        self._close()
 
     @property
     def _hostname(self) -> str:
@@ -95,7 +95,7 @@ class SnmpFactory:
         return self.session.get(consts.sysUpTime.oid).value
 
     @property
-    def _chasis_id(self) -> Any:
+    def _chassis_id(self) -> Any:
         """
         collect chasis id via `LLDP-MIB`.
         Special configuration for Huawei: snmp should include iso view and mib-2
@@ -167,7 +167,7 @@ class SnmpFactory:
     def discovery(self) -> dict:
         return {
             "hostname": self._hostname,
-            "chassis_id": self.chasis_id,
+            "chassis_id": self.chassis_id,
             "uptime": self.uptime,
             "interfaces": self.interfaces,
             "lldp_neighbors": self.lldp_neighbors,

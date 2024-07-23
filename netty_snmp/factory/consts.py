@@ -6,7 +6,7 @@ SNMP_DEFAULT_PORT = 161
 SNMP_DEFAULT_COMMUNITY = "public"
 UNKNOWN_MANUFACTURER = "Unknown"
 UNKNOWN_PLATFORM = "Unknown"
-UNKOWNN_MODEL = "Unknown"
+UNKNOWN_MODEL = "Unknown"
 
 
 class SnmpVersion(IntEnum):

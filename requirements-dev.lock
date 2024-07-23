@@ -20,8 +20,6 @@ ezsnmp==1.0.0rc2
     # via netty-snmp
 filelock==3.15.4
     # via virtualenv
-gufo-snmp==0.5.1
-    # via netty-snmp
 icmplib==3.0.4
     # via netty-snmp
 identify==2.6.0

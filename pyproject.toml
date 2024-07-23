@@ -10,7 +10,6 @@ dependencies = [
     "ezsnmp>=1.0.0rc2",
     "pandas>=2.2.2",
     "icmplib>=3.0.4",
-    "gufo-snmp>=0.5.1",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"
