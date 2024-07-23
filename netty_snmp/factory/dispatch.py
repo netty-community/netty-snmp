@@ -5,7 +5,7 @@ from ezsnmp import EzSNMPError, Session
 from icmplib import ping
 from tcppinglib import tcpping
 
-from netty_snmp._types import DeviceType, DiscoveryData, DiscoveryResponse, IPvANyNetwork
+from netty_snmp._types import DeviceType, DiscoveryData, DiscoveryItem, DiscoveryResponse, IPvANyNetwork
 from netty_snmp.device_type.device_types import Platform, get_device_type
 from netty_snmp.factory import consts
 from netty_snmp.factory.manufactures.arista import AristaSnmpFactory
@@ -39,7 +39,7 @@ def get_factory(platform: Platform) -> type[SnmpFactory]:
         Platform.PaloAlto: PaloaltoSnmpFactory,
     }
 
-    return factories[platform]
+    return factories.get(platform, SnmpFactory)
 
 
 class DispatchSnmpFactory:
@@ -95,11 +95,13 @@ class DispatchSnmpFactory:
             session = Session(
                 hostname=ip, remote_port=self.port, community=self.community, version=consts.SnmpVersion.v2c
             )
-        if self.version == consts.SnmpVersion.v3 and self.v3_params:
+        elif self.version == consts.SnmpVersion.v3 and self.v3_params:
             session = Session(hostname=ip, remote_port=self.port, version=consts.SnmpVersion.v3, **self.v3_params)
+        else:
+            raise ValueError("Unsupported SNMP version")
         return session
 
-    def _dispatch(self, ip: str) -> DiscoveryResponse:
+    def _dispatch(self, ip: str, discovery_items: list[DiscoveryItem] | None = None) -> DiscoveryResponse:
         session = self.get_snmp_session(ip)
         icmp_reachable = ping(ip, count=2, interval=0.2, timeout=1, privileged=False).is_alive
         ssh_reachable = tcpping(ip, port=22, timeout=1, count=2, interval=0.2).is_alive
@@ -117,7 +119,7 @@ class DispatchSnmpFactory:
         _sys_object_id = self.sys_object_id(session)
         device_type = self.device_type(sys_object_id=_sys_object_id)
         factory = get_factory(device_type["platform"])
-        device_data = factory(ip, self.port, self.version, self.community, self.v3_params).discovery()
+        device_data = factory(ip, self.port, self.version, self.community, self.v3_params).discovery(discovery_items)
         discovery_data = DiscoveryData(
             device_type=device_type["model"],
             manufacturer=device_type["manufacturer"],
@@ -127,7 +129,7 @@ class DispatchSnmpFactory:
         discovery_response["data"] = discovery_data
         return discovery_response
 
-    def dispatch(self) -> list[DiscoveryResponse]:
+    def dispatch(self, discovery_items: list[DiscoveryItem] | None = None) -> list[DiscoveryResponse]:
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-            futures = [executor.submit(self._dispatch, str(ip)) for ip in self.prefix.hosts()]
+            futures = [executor.submit(self._dispatch, str(ip), discovery_items) for ip in self.prefix.hosts()]
             return [future.result() for future in as_completed(futures)]

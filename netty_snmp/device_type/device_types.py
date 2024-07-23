@@ -10,6 +10,7 @@ from netty_snmp.device_type.manufactures.huawei import HUAWEI_DEVICE_TYPES
 from netty_snmp.device_type.manufactures.juniper import JUNIPER_DEVICE_TYPES
 from netty_snmp.device_type.manufactures.paloalto import PALOALTO_DEVICE_TYPES
 from netty_snmp.device_type.manufactures.ruijie import RUIJIE_DEVICE_TYPES
+from netty_snmp.factory.consts import UNKNOWN_MODEL, UNKNOWN_PLATFORM
 
 
 class Manufacturer(StrEnum):
@@ -22,6 +23,9 @@ class Manufacturer(StrEnum):
     PaloAlto = "Palo Alto"
     FortiNet = "FortiNet"
     Juniper = "Juniper"
+    Netgear = "Netgear"
+    TPLink = "TP-Link"
+    Ruckus = "Ruckus"
 
 
 class Platform(StrEnum):
@@ -40,6 +44,9 @@ class Platform(StrEnum):
     FortiNet = "fortinet"
     PaloAlto = "paloalto_panos"
     Juniper = "juniper_junos"
+    Netgear = "netgear_prosafe"
+    TPLink = "tplink_jetstream"
+    Ruckus = "ruckus_fastiron"
 
 
 EnterpriseIdManufacturer: dict[str, Manufacturer] = {
@@ -52,6 +59,9 @@ EnterpriseIdManufacturer: dict[str, Manufacturer] = {
     "25461": Manufacturer.PaloAlto,
     "12356": Manufacturer.FortiNet,
     "2636": Manufacturer.Juniper,
+    "4562": Manufacturer.Netgear,
+    "11863": Manufacturer.TPLink,
+    "25053": Manufacturer.Ruckus,
 }
 
 
@@ -77,15 +87,18 @@ ManufacturerDefaultPlatform = {
     Manufacturer.PaloAlto: Platform.PaloAlto,
     Manufacturer.FortiNet: Platform.FortiNet,
     Manufacturer.Juniper: Platform.Juniper,
+    Manufacturer.Netgear: Platform.Netgear,
+    Manufacturer.TPLink: Platform.TPLink,
+    Manufacturer.Ruckus: Platform.Ruckus,
 }
 
 
 def _forecast_platform(device_type: DeviceType) -> Platform:
     if device_type.get("platform"):
-        return device_type["platform"]
+        return device_type["platform"]  # type: ignore  # noqa: PGH003
     # Optimization: add other platforms forecasting according to model name and vendor
     if device_type["manufacturer"] == Manufacturer.Cisco:
-        if device_type["model"].startswith("C9", "C38"):
+        if device_type["model"].startswith(("C9", "C38")):
             device_type["platform"] = Platform.CiscoIOSXE
         elif device_type["model"].startswith("N"):
             device_type["platform"] = Platform.CiscoNexusOS
@@ -98,7 +111,7 @@ def _forecast_platform(device_type: DeviceType) -> Platform:
             device_type["platform"] = Platform.HuaweiVRPV8
         else:
             device_type["platform"] = Platform.HuaweiVRP
-    device_type["platform"] = ManufacturerDefaultPlatform[device_type["manufacturer"]]
+    device_type["platform"] = ManufacturerDefaultPlatform[device_type["manufacturer"]]  # type: ignore  # noqa: PGH003
 
     return device_type["platform"]
 
@@ -115,6 +128,12 @@ def get_device_type(sys_object_id: str) -> DeviceType | None:
         return None
 
     device_type = ManufacturerDeviceTypes[EnterpriseIdManufacturer[private_enterprise_id]].get(sys_object_id)
+    if not device_type:
+        device_type = DeviceType(
+            manufacturer=EnterpriseIdManufacturer[private_enterprise_id],
+            model=UNKNOWN_MODEL,
+            platform=UNKNOWN_PLATFORM,
+        )
     return _get_manufacturer_platform(device_type)
 
 

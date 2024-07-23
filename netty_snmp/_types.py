@@ -3,6 +3,22 @@ from typing import Literal, NamedTuple, TypedDict
 
 type IPvANyNetwork = IPv4Network | IPv6Network
 
+type DiscoveryItem = Literal[
+    "hostname",
+    "sys_descr",
+    "chassis_id",
+    "uptime",
+    "interfaces",
+    "lldp_neighbors",
+    "stack",
+    "vlans",
+    "prefixes",
+    "routes",
+    "entities",
+    "mac_address_table",
+    "arp_table",
+]
+
 
 class DeviceType(TypedDict):
     platform: str
@@ -50,6 +66,7 @@ class LldpNeighbor(TypedDict):
 
 class DiscoveryData(TypedDict):
     hostname: str
+    sys_descr: str
     uptime: str
     device_type: str | None
     chassis_id: str

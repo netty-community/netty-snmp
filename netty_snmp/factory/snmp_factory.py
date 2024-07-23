@@ -3,6 +3,7 @@ from typing import Any, Literal, TypedDict
 import pandas as pd
 from ezsnmp import Session
 
+from netty_snmp._types import DiscoveryItem
 from netty_snmp.factory import consts
 
 
@@ -59,11 +60,15 @@ class SnmpFactory:
         results = self.session.get_bulk([item.oid for item in items])
         dfs = [[result.oid_index, result.oid, result.value] for result in results]
         df = pd.DataFrame(dfs, columns=["snmp_index", "name", "value"])
-        return df.pivot(index="snmp_index", columns="name", values="value")
+        return df.pivot(index="snmp_index", columns="name", values="value")  # noqa: PD010
 
     @property
     def _hostname(self) -> str:
         return self.session.get(consts.sysName.oid).value
+
+    @property
+    def sys_descr(self) -> str:
+        return self.session.get(consts.sysDescr.oid).value
 
     @property
     def uptime(self) -> int:
@@ -139,39 +144,21 @@ class SnmpFactory:
     @property
     def arp_table(self) -> Any: ...
 
-    def discovery(self) -> dict:
-        return {
-            "hostname": self._hostname,
-            "chassis_id": self.chassis_id,
-            "uptime": self.uptime,
-            "interfaces": self.interfaces,
-            "lldp_neighbors": self.lldp_neighbors,
-            "stack": self.stack,
-            "vlans": self.vlans,
-            "prefixes": self.prefixes,
-            "routes": self.routes,
-            "entities": self.entities,
-            "mac_address_table": self.mac_address_table,
-            "arp_table": self.arp_table,
-        }
-
-    def discovery_choices(
-        self,
-        choices: list[
-            Literal[
-                "hostname",
-                "chassis_id",
-                "uptime",
-                "interfaces",
-                "lldp_neighbors",
-                "stack",
-                "vlans",
-                "prefixes",
-                "routes",
-                "entities",
-                "mac_address_table",
-                "arp_table",
-            ]
-        ],
-    ) -> dict:
-        return {x: getattr(self, x) for x in choices}
+    def discovery(self, items: list[DiscoveryItem] | None = None) -> dict:
+        if not items:
+            return {
+                "hostname": self._hostname,
+                "sys_descr": self.sys_descr,
+                "chassis_id": self.chassis_id,
+                "uptime": self.uptime,
+                "interfaces": self.interfaces,
+                "lldp_neighbors": self.lldp_neighbors,
+                "stack": self.stack,
+                "vlans": self.vlans,
+                "prefixes": self.prefixes,
+                "routes": self.routes,
+                "entities": self.entities,
+                "mac_address_table": self.mac_address_table,
+                "arp_table": self.arp_table,
+            }
+        return {x: getattr(self, x) for x in items}
