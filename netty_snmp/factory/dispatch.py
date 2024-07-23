@@ -78,9 +78,7 @@ class DispatchSnmpFactory:
         return result is not None
 
     def sys_object_id(self, session: Session) -> str:
-        iso_id = "..1.3.6.1.4.1."
-        _sys_object_id = session.get(consts.sysObjectID.oid).value
-        return _sys_object_id.split(iso_id)[1]
+        return session.get(consts.sysObjectID.oid).value
 
     def device_type(self, sys_object_id: str) -> "DeviceType":
         device_type = get_device_type(sys_object_id)

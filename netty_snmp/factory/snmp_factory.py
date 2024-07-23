@@ -1,4 +1,3 @@
-from types import TracebackType
 from typing import Any, Literal, TypedDict
 
 import pandas as pd
@@ -26,7 +25,6 @@ class SnmpV3Params(TypedDict):
 
 
 class SnmpFactory:
-    session: Session | None = None
     hostname: str | None = None
     chassis_id: str | None = None
     sys_object_id: str | None = None
@@ -62,21 +60,6 @@ class SnmpFactory:
         dfs = [[result.oid_index, result.oid, result.value] for result in results]
         df = pd.DataFrame(dfs, columns=["snmp_index", "name", "value"])
         return df.pivot_table(index="snmp_index", columns="name", values="value")
-
-    def _close(self) -> None:
-        if not self.session:
-            return
-        self.session = None
-        return
-
-    def __enter__(self) -> "SnmpFactory":
-        self.session = self._session()
-        return self
-
-    def __exit__(
-        self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: TracebackType | None
-    ) -> None:
-        self._close()
 
     @property
     def _hostname(self) -> str:
