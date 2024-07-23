@@ -651,8 +651,8 @@ HUAWEI_DEVICE_TYPES: dict[str, "DeviceType"] = {
     "1.3.6.1.4.1.2011.2.23.576": {"manufacturer": "Huawei", "platform": "huawei", "model": "S5720-28P-LI-AC"},
     "1.3.6.1.4.1.2011.2.23.604": {"manufacturer": "Huawei", "platform": "huawei", "model": "S5730-68C-HI"},
     "1.3.6.1.4.1.2011.2.23.606": {"manufacturer": "Huawei", "platform": "huawei", "model": "S5730-68C-PWH-HI"},
-    "1.3.6.1.4.1.2011.2.23.665": {"manufacturer": "Huawei", "platform": "huawei", "model": "CLOUDENGINE S6730-H48X6C"},
-    "1.3.6.1.4.1.2011.2.23.667": {"manufacturer": "Huawei", "platform": "huawei", "model": "CLOUDENGINE S6730-H24X6C"},
+    "1.3.6.1.4.1.2011.2.23.665": {"manufacturer": "Huawei", "platform": "huawei", "model": "S6730-H48X6C"},
+    "1.3.6.1.4.1.2011.2.23.667": {"manufacturer": "Huawei", "platform": "huawei", "model": "S6730-H24X6C"},
     "1.3.6.1.4.1.2011.2.23.67": {"manufacturer": "Huawei", "platform": "huawei", "model": "S3552F"},
     "1.3.6.1.4.1.2011.2.23.68": {"manufacturer": "Huawei", "platform": "huawei", "model": "S3552F-EI"},
     "1.3.6.1.4.1.2011.2.23.681": {"manufacturer": "Huawei", "platform": "huawei", "model": "CLOUDENGINE 5882-48T4S-B"},
@@ -982,6 +982,7 @@ HUAWEI_DEVICE_TYPES: dict[str, "DeviceType"] = {
     "1.3.6.1.4.1.2011.6.122.8.19.1": {"manufacturer": "Huawei", "platform": "huawei", "model": "ANTIDDOS8030"},
     "1.3.6.1.4.1.2011.6.133.46": {"manufacturer": "Huawei", "platform": "huawei", "model": "USG6550"},
     "1.3.6.1.4.1.2011.6.133.55": {"manufacturer": "Huawei", "platform": "huawei", "model": "USG6620"},
+    
 }
 
 
