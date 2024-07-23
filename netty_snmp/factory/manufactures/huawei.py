@@ -16,7 +16,7 @@ class HuaweiSnmpFactory(SnmpFactory):
 
     @property
     def stack(self) -> dict:
-        stack_running = self.session.get(consts.hwStackRun).value
+        stack_running = self.session.get(consts.hwStackRun.oid).value
         if stack_running != "1":
             return {}
         stack_oids = [

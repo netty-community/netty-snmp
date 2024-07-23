@@ -3,7 +3,6 @@ from typing import Any, Literal, TypedDict
 
 import pandas as pd
 from ezsnmp import Session
-from tcppinglib import tcpping
 
 from netty_snmp.factory import consts
 
@@ -47,15 +46,9 @@ class SnmpFactory:
         self.community = community
         self.v3_params = v3_params
         self.model = model
-
-    @property
-    def _ping(self) -> bool:
-        return tcpping(self.ip, self.port).is_alive
+        self.session = self._session()
 
     def _session(self) -> Session:
-        if not self._ping:
-            raise SnmpConnectionError(f"Failed to connect to SNMP port: {self.ip}:{self.port}")
-
         if self.version == consts.SnmpVersion.v2c and self.community:
             return Session(
                 hostname=self.ip, remote_port=self.port, community=self.community, version=consts.SnmpVersion.v2c
@@ -65,9 +58,8 @@ class SnmpFactory:
         raise SnmpVersionError(f"Unsupported SNMP version: {self.version}")
 
     def _snmp_discovery_df(self, items: list[consts.SnmpItem]) -> pd.DataFrame:
-        oid_mapping = {item.oid: item for item in items}
         results = self.session.get_bulk([item.oid for item in items])
-        dfs = [[result.oid_index, oid_mapping[result.oid]["name"], result.value] for result in results]
+        dfs = [[result.oid_index, result.oid, result.value] for result in results]
         df = pd.DataFrame(dfs, columns=["snmp_index", "name", "value"])
         return df.pivot_table(index="snmp_index", columns="name", values="value")
 
@@ -105,14 +97,14 @@ class SnmpFactory:
     @property
     def interfaces(self) -> dict:
         interface_oids = [
-            consts.ifIndex.oid,
-            consts.ifDescr.oid,
-            consts.ifType.oid,
-            consts.ifMtu.oid,
-            consts.ifSpeed.oid,
-            consts.ifPhysAddr.oid,
-            consts.ifAdminStatus.oid,
-            consts.ifOperStatus.oid,
+            consts.ifIndex,
+            consts.ifDescr,
+            consts.ifType,
+            consts.ifMtu,
+            consts.ifSpeed,
+            consts.ifPhysAddr,
+            consts.ifAdminStatus,
+            consts.ifOperStatus,
         ]
         return self._snmp_discovery_df(interface_oids).to_dict(orient="records")
 
@@ -137,9 +129,9 @@ class SnmpFactory:
         but fuck huawei (3 or 9(module) for different product lines) because its unstandard implementation
         """
         entities_oids = [
-            consts.entPhysicalClass.oid,
-            consts.entPhysicalDescr.oid,
-            consts.entPhysicalName.oid,
+            consts.entPhysicalClass,
+            consts.entPhysicalDescr,
+            consts.entPhysicalName,
             consts.entPhysicalFirmwareRev,
             consts.entPhysicalHardwareRev,
             consts.entPhysicalSerialNum,
