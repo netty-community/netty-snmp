@@ -110,7 +110,7 @@ def _get_manufacturer_platform(device_type: DeviceType) -> DeviceType:
 
 
 def get_device_type(sys_object_id: str) -> DeviceType | None:
-    private_enterprise_id = sys_object_id.split("..1.3.6.1.4.1.")[1].split(".")[0]
+    private_enterprise_id = sys_object_id.split(".1.3.6.1.4.1.")[1].split(".")[0]
     if private_enterprise_id not in EnterpriseIdManufacturer:
         return None
 

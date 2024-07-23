@@ -59,7 +59,7 @@ class SnmpFactory:
         results = self.session.get_bulk([item.oid for item in items])
         dfs = [[result.oid_index, result.oid, result.value] for result in results]
         df = pd.DataFrame(dfs, columns=["snmp_index", "name", "value"])
-        return df.pivot_table(index="snmp_index", columns="name", values="value")
+        return df.pivot(index="snmp_index", columns="name", values="value")
 
     @property
     def _hostname(self) -> str:
