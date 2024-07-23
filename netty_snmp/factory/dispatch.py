@@ -79,8 +79,8 @@ class DispatchSnmpFactory:
 
     def sys_object_id(self, session: Session) -> str:
         iso_id = ".1.3.6.1.4.1."
-        sys_object_id = session.get(consts.sysObjectID.oid).value).split(iso_id)[1]
-        return sys_object_id
+        _sys_object_id = session.get(consts.sysObjectID.oid).value
+        return _sys_object_id.split(iso_id)[1]
 
     def device_type(self, sys_object_id: str) -> "DeviceType":
         device_type = get_device_type(sys_object_id)

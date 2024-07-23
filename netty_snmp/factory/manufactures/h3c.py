@@ -15,5 +15,4 @@ class H3cSnmpFactory(SnmpFactory):
         super().__init__(ip, port, version, community, v3_params, model)
 
     @property
-    def version(self):
-        return self.session.get()
+    def version(self) -> str: ...

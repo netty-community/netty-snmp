@@ -982,7 +982,6 @@ HUAWEI_DEVICE_TYPES: dict[str, "DeviceType"] = {
     "1.3.6.1.4.1.2011.6.122.8.19.1": {"manufacturer": "Huawei", "platform": "huawei", "model": "ANTIDDOS8030"},
     "1.3.6.1.4.1.2011.6.133.46": {"manufacturer": "Huawei", "platform": "huawei", "model": "USG6550"},
     "1.3.6.1.4.1.2011.6.133.55": {"manufacturer": "Huawei", "platform": "huawei", "model": "USG6620"},
-    
 }
 
 
