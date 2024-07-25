@@ -139,14 +139,14 @@ class SnmpFactory:
         except EzSNMPError as e:
             self.exceptions.append(DiscoveryException(item="interfaces", exception=str(e)))
             return []
-        index_if_index = {x.oid.split(".")[-1]: x.value for x in if_index}
-        index_if_name = {x.oid.split(".")[-1]: x.value for x in if_name}
-        index_if_mtu = {x.oid.split(".")[-1]: x.value for x in if_mtu}
-        index_if_speed = {x.oid.split(".")[-1]: x.value for x in if_speed}
-        index_if_type = {x.oid.split(".")[-1]: x.value for x in if_type}
-        if_phys_addr = {x.oid.split(".")[-1]: x.value for x in if_phys_addr}
-        index_if_admin = {x.oid.split(".")[-1]: x.value for x in if_admin}
-        index_if_oper = {x.oid.split(".")[-1]: x.value for x in if_oper}
+        index_if_index = {x.oid_index: x.value for x in if_index}
+        index_if_name = {x.oid_index: x.value for x in if_name}
+        index_if_mtu = {x.oid_index: x.value for x in if_mtu}
+        index_if_speed = {x.oid_index: x.value for x in if_speed}
+        index_if_type = {x.oid_index: x.value for x in if_type}
+        if_phys_addr = {x.oid_index: x.value for x in if_phys_addr}
+        index_if_admin = {x.oid_index: x.value for x in if_admin}
+        index_if_oper = {x.oid_index: x.value for x in if_oper}
         return [
             Interface(
                 if_index=int(x),
@@ -196,7 +196,7 @@ class SnmpFactory:
                 remote_if_name=index_remote_if_name[x],
                 remote_if_descr=index_remote_if_descr[x],
             )
-            for x in remote_chassis_id
+            for x in index_remote_chassis_id
         ]
 
     @property
@@ -212,25 +212,22 @@ class SnmpFactory:
             ent_phy_class = self.session.bulkwalk(consts.entPhysicalClass.oid)
             ent_phy_descr = self.session.bulkwalk(consts.entPhysicalDescr.oid)
             ent_phy_name = self.session.bulkwalk(consts.entPhysicalName.oid)
-            ent_phy_firmware = self.session.bulkwalk(consts.entPhysicalFirmwareRev.oid)
-            ent_phy_hardware = self.session.bulkwalk(consts.entPhysicalHardwareRev.oid)
+            ent_phy_software = self.session.bulkwalk(consts.entPhysicalSoftwareRev.oid)
             ent_phy_serial = self.session.bulkwalk(consts.entPhysicalSerialNum.oid)
         except EzSNMPError as e:
             self.exceptions.append(DiscoveryException(item="entities", exception=str(e)))
             return []
-        index_ent_phy_class = {x.oid.split(".")[-1]: x.value for x in ent_phy_class if int(x.value) == 3}  # noqa: PLR2004
-        index_ent_phy_descr = {x.oid.split(".")[-1]: x.value for x in ent_phy_descr}
-        index_ent_phy_name = {x.oid.split(".")[-1]: x.value for x in ent_phy_name}
-        index_ent_phy_firmware = {x.oid.split(".")[-1]: x.value for x in ent_phy_firmware}
-        index_ent_phy_hardware = {x.oid.split(".")[-1]: x.value for x in ent_phy_hardware}
-        index_ent_phy_serial = {x.oid.split(".")[-1]: x.value for x in ent_phy_serial}
+        index_ent_phy_class = {x.oid_index: x.value for x in ent_phy_class if int(x.value) == 3}  # noqa: PLR2004
+        index_ent_phy_descr = {x.oid_index: x.value for x in ent_phy_descr}
+        index_ent_phy_name = {x.oid_index: x.value for x in ent_phy_name}
+        index_ent_phy_software = {x.oid_index: x.value for x in ent_phy_software}
+        index_ent_phy_serial = {x.oid_index: x.value for x in ent_phy_serial}
         return [
             Entity(
                 ent_physical_class=int(x),
                 ent_physical_descr=index_ent_phy_descr[x],
                 ent_physical_name=index_ent_phy_name[x],
-                ent_physical_firmware_rev=index_ent_phy_firmware[x],
-                ent_physical_hardware_rev=index_ent_phy_hardware[x],
+                ent_physical_software_rev=index_ent_phy_software[x],
                 ent_physical_serial_num=index_ent_phy_serial[x],
             )
             for x in index_ent_phy_class

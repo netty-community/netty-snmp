@@ -206,14 +206,6 @@ lldpLocPortDesc = SnmpItem(
     value_mapping=None,
 )
 
-dot1dBasePortIfIndex = SnmpItem(
-    name="dot1dBasePortIfIndex",
-    oid=".1.3.6.1.2.1.17.1.4.1.1",
-    description="0	The value of the instance of the ifIndex object,",
-    value_type="int",
-    value_mapping=None,
-)
-
 lldpRemChassisIdSubtype = SnmpItem(
     name="lldpRemChassisIdSubtype",
     oid=".1.0.8802.1.1.2.1.4.1.1.4",
@@ -297,14 +289,14 @@ entPhysicalHardwareRev = SnmpItem(
     description="The hardware revision of the physical entity.",
     value_type="str",
     value_mapping=None,
-)
+)  # not include in discovery
 entPhysicalFirmwareRev = SnmpItem(
     name="entPhysicalFirmwareRev",
     oid=".1.3.6.1.2.1.47.1.1.1.1.9",
     description="The firmware revision of the physical entity.",
     value_type="str",
     value_mapping=None,
-)
+)  # not include in discovery
 
 entPhysicalSoftwareRev = SnmpItem(
     name="entPhysicalSoftwareRev",
