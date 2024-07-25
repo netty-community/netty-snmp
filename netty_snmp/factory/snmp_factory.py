@@ -1,10 +1,10 @@
 from typing import Any, Literal, TypedDict
 
-import pandas as pd
-from ezsnmp import Session
+from ezsnmp import EzSNMPError, Session
 
-from netty_snmp._types import DiscoveryItem
+from netty_snmp._types import DiscoveryException, DiscoveryItem, Entity, Interface, LldpNeighbor, SnmpDiscoveryData
 from netty_snmp.factory import consts
+from netty_snmp.utils import mac_address_validator
 
 
 class SnmpVersionError(Exception):
@@ -26,10 +26,6 @@ class SnmpV3Params(TypedDict):
 
 
 class SnmpFactory:
-    hostname: str | None = None
-    chassis_id: str | None = None
-    sys_object_id: str | None = None
-
     def __init__(
         self,
         ip: str,
@@ -46,85 +42,172 @@ class SnmpFactory:
         self.v3_params = v3_params
         self.model = model
         self.session = self._session()
+        self.exceptions: list[DiscoveryException] = []
 
     def _session(self) -> Session:
         if self.version == consts.SnmpVersion.v2c and self.community:
             return Session(
-                hostname=self.ip, remote_port=self.port, community=self.community, version=consts.SnmpVersion.v2c
+                hostname=self.ip,
+                remote_port=self.port,
+                community=self.community,
+                version=consts.SnmpVersion.v2c,
+                use_long_names=False,
+                use_enums=False,
+                use_sprint_value=True,
             )
         if self.version == consts.SnmpVersion.v3 and self.v3_params:
-            return Session(hostname=self.ip, remote_port=self.port, version=consts.SnmpVersion.v3, **self.v3_params)
+            return Session(
+                hostname=self.ip,
+                remote_port=self.port,
+                version=consts.SnmpVersion.v3,
+                **self.v3_params,
+                use_long_names=False,
+                use_enums=False,
+                use_sprint_value=True,
+            )
         raise SnmpVersionError(f"Unsupported SNMP version: {self.version}")
 
-    def _snmp_discovery_df(self, items: list[consts.SnmpItem]) -> pd.DataFrame:
-        results = self.session.get_bulk([item.oid for item in items])
-        dfs = [[result.oid_index, result.oid, result.value] for result in results]
-        df = pd.DataFrame(dfs, columns=["snmp_index", "name", "value"])
-        return df.pivot(index="snmp_index", columns="name", values="value")  # noqa: PD010
-
     @property
-    def _hostname(self) -> str:
-        return self.session.get(consts.sysName.oid).value
+    def hostname(self) -> str:
+        try:
+            return self.session.get(consts.sysName.oid).value
+        except EzSNMPError as e:
+            self.exceptions.append(DiscoveryException(item="hostname", exception=str(e)))
+            return ""
 
     @property
     def sys_descr(self) -> str:
-        return self.session.get(consts.sysDescr.oid).value
+        try:
+            return self.session.get(consts.sysDescr.oid).value
+        except EzSNMPError as e:
+            self.exceptions.append(DiscoveryException(item="sys_descr", exception=str(e)))
+            return ""
 
     @property
-    def uptime(self) -> int:
-        return self.session.get(consts.sysUpTime.oid).value
+    def uptime(self) -> str:
+        try:
+            return self.session.get(consts.sysUpTime.oid).value
+        except EzSNMPError as e:
+            self.exceptions.append(DiscoveryException(item="uptime", exception=str(e)))
+            return ""
 
     @property
-    def _chassis_id(self) -> Any:
+    def chassis_id(self) -> Any:
         """
         collect chasis id via `LLDP-MIB`.
         Special configuration for Huawei: snmp should include iso view and mib-2
         """
-        return self.session.get(consts.lldpLocChassisId.oid).value
+        try:
+            return mac_address_validator(self.session.get(consts.lldpLocChassisId.oid).value)
+        except EzSNMPError as e:
+            self.exceptions.append(DiscoveryException(item="chassis_id", exception=str(e)))
+            return ""
 
     @property
-    def interfaces(self) -> dict:
-        interface_oids = [
-            consts.ifIndex,
-            consts.ifDescr,
-            consts.ifType,
-            consts.ifMtu,
-            consts.ifSpeed,
-            consts.ifPhysAddr,
-            consts.ifAdminStatus,
-            consts.ifOperStatus,
+    def interfaces(self) -> list[Interface]:
+        try:
+            if_index = self.session.bulkwalk(consts.ifIndex.oid)
+            if_name = self.session.bulkwalk(consts.ifDescr.oid)
+            if_mtu = self.session.bulkwalk(consts.ifMtu.oid)
+            if_speed = self.session.bulkwalk(consts.ifSpeed.oid)
+            if_type = self.session.bulkwalk(consts.ifType.oid)
+            if_phys_addr = self.session.bulkwalk(consts.ifPhysAddr.oid)
+            if_admin = self.session.bulkwalk(consts.ifAdminStatus.oid)
+            if_oper = self.session.bulkwalk(consts.ifOperStatus.oid)
+        except EzSNMPError as e:
+            self.exceptions.append(DiscoveryException(item="interfaces", exception=str(e)))
+            return []
+        index_if_index = {x.oid.split(".")[-1]: x.value for x in if_index}
+        index_if_name = {x.oid.split(".")[-1]: x.value for x in if_name}
+        index_if_mtu = {x.oid.split(".")[-1]: x.value for x in if_mtu}
+        index_if_speed = {x.oid.split(".")[-1]: x.value for x in if_speed}
+        index_if_type = {x.oid.split(".")[-1]: x.value for x in if_type}
+        if_phys_addr = {x.oid.split(".")[-1]: x.value for x in if_phys_addr}
+        index_if_admin = {x.oid.split(".")[-1]: x.value for x in if_admin}
+        index_if_oper = {x.oid.split(".")[-1]: x.value for x in if_oper}
+        return [
+            Interface(
+                if_index=int(x),
+                if_descr=index_if_name[x],
+                if_mtu=int(index_if_mtu[x]),
+                if_speed=int(index_if_speed[x]),
+                if_type=index_if_type[x],
+                if_phys_address=mac_address_validator(if_phys_addr[x]),
+                if_admin_status=index_if_admin[x],
+                if_oper_status=index_if_oper[x],
+            )
+            for x in index_if_index
         ]
-        return self._snmp_discovery_df(interface_oids).to_dict(orient="records")
 
     @property
     def lldp_neighbors(self) -> Any:
-        # local_if_index = self.session.get_bulk(consts.lldpLocalPortId.oid)  # noqa: ERA001
-        lldp_oids = [
-            consts.lldpRemChassisIdSubtype,
-            consts.lldpRemChassisId,
-            consts.lldpRemPortIdSubtype,
-            consts.lldpRemPortId,
-            consts.lldpRemPortDesc,
-            consts.lldpRemSysName,
+        try:
+            local_chassis_id = self.chassis_id
+            local_if_name = self.session.get(consts.lldpLoPortId.oid)
+            local_if_descr = self.session.get(consts.lldpLocPortDesc.oid)
+            remote_chassis_id = self.session.get(consts.lldpRemChassisId.oid)
+            remote_hostname = self.session.get(consts.lldpRemSysName.oid)
+            remote_if_name = self.session.get(consts.lldpRemPortId.oid)
+            remote_if_descr = self.session.get(consts.lldpRemPortDesc.oid)
+        except EzSNMPError as e:
+            self.exceptions.append(DiscoveryException(item="lldp_neighbors", exception=str(e)))
+            return []
+        index_local_if_name = {x.oid.split(".")[-1]: x.value for x in local_if_name}
+        index_local_if_descr = {x.oid.split(".")[-1]: x.value for x in local_if_descr}
+        index_remote_chassis_id = {x.oid.split(".")[-2]: mac_address_validator(x.value) for x in remote_chassis_id}
+        index_remote_hostname = {x.oid.split(".")[-2]: x.value for x in remote_hostname}
+        index_remote_if_name = {x.oid.split(".")[-2]: x.value for x in remote_if_name}
+        index_remote_if_descr = {x.oid.split(".")[-2]: x.value for x in remote_if_descr}
+        return [
+            LldpNeighbor(
+                local_chassis_id=local_chassis_id,
+                local_hostname=self.hostname,
+                local_if_name=index_local_if_name[x],
+                local_if_descr=index_local_if_descr[x],
+                remote_chassis_id=index_remote_chassis_id[x],
+                remote_hostname_id=index_remote_hostname[x],
+                remote_if_name=index_remote_if_name[x],
+                remote_if_descr=index_remote_if_descr[x],
+            )
+            for x in index_local_if_name
         ]
-        return self._snmp_discovery_df(lldp_oids).to_dict(orient="records")
 
     @property
-    def entities(self) -> Any:
+    def entities(self) -> list[Entity]:
         """
         collect entities via `ENTITY-MIB`
         basically: chassis(3) should be the main module of device.
         but fuck huawei (3 or 9(module) for different product lines) because its unstandard implementation
+        see value mapping in `consts.py`: ENTITY_PHYSICAL_CLASS_MAPPING
+        so it may won't work for huawei in default factory.
         """
-        entities_oids = [
-            consts.entPhysicalClass,
-            consts.entPhysicalDescr,
-            consts.entPhysicalName,
-            consts.entPhysicalFirmwareRev,
-            consts.entPhysicalHardwareRev,
-            consts.entPhysicalSerialNum,
+        try:
+            ent_phy_class = self.session.bulkwalk(consts.entPhysicalClass.oid)
+            ent_phy_descr = self.session.bulkwalk(consts.entPhysicalDescr.oid)
+            ent_phy_name = self.session.bulkwalk(consts.entPhysicalName.oid)
+            ent_phy_firmware = self.session.bulkwalk(consts.entPhysicalFirmwareRev.oid)
+            ent_phy_hardware = self.session.bulkwalk(consts.entPhysicalHardwareRev.oid)
+            ent_phy_serial = self.session.bulkwalk(consts.entPhysicalSerialNum.oid)
+        except EzSNMPError as e:
+            self.exceptions.append(DiscoveryException(item="entities", exception=str(e)))
+            return []
+        index_ent_phy_class = {x.oid.split(".")[-1]: x.value for x in ent_phy_class if int(x.value) == 3}  # noqa: PLR2004
+        index_ent_phy_descr = {x.oid.split(".")[-1]: x.value for x in ent_phy_descr}
+        index_ent_phy_name = {x.oid.split(".")[-1]: x.value for x in ent_phy_name}
+        index_ent_phy_firmware = {x.oid.split(".")[-1]: x.value for x in ent_phy_firmware}
+        index_ent_phy_hardware = {x.oid.split(".")[-1]: x.value for x in ent_phy_hardware}
+        index_ent_phy_serial = {x.oid.split(".")[-1]: x.value for x in ent_phy_serial}
+        return [
+            Entity(
+                ent_physical_class=int(x),
+                ent_physical_descr=index_ent_phy_descr[x],
+                ent_physical_name=index_ent_phy_name[x],
+                ent_physical_firmware_rev=index_ent_phy_firmware[x],
+                ent_physical_hardware_rev=index_ent_phy_hardware[x],
+                ent_physical_serial_num=index_ent_phy_serial[x],
+            )
+            for x in index_ent_phy_class
         ]
-        return self._snmp_discovery_df(entities_oids).to_dict(orient="records")
 
     @property
     def stack(self) -> Any: ...
@@ -144,21 +227,19 @@ class SnmpFactory:
     @property
     def arp_table(self) -> Any: ...
 
-    def discovery(self, items: list[DiscoveryItem] | None = None) -> dict:
+    def discovery(self, items: list[DiscoveryItem] | None = None) -> SnmpDiscoveryData:
         if not items:
-            return {
-                "hostname": self._hostname,
-                "sys_descr": self.sys_descr,
-                "chassis_id": self.chassis_id,
-                "uptime": self.uptime,
-                "interfaces": self.interfaces,
-                "lldp_neighbors": self.lldp_neighbors,
-                "stack": self.stack,
-                "vlans": self.vlans,
-                "prefixes": self.prefixes,
-                "routes": self.routes,
-                "entities": self.entities,
-                "mac_address_table": self.mac_address_table,
-                "arp_table": self.arp_table,
-            }
-        return {x: getattr(self, x) for x in items}
+            return SnmpDiscoveryData(
+                hostname=self.hostname,
+                sys_descr=self.sys_descr,
+                uptime=self.uptime,
+                chassis_id=self.chassis_id,
+                interfaces=self.interfaces,
+                lldp_neighbors=self.lldp_neighbors,
+                stack=self.stack,
+                vlans=self.vlans,
+                prefixes=self.prefixes,
+                routes=self.routes,
+                exceptions=self.exceptions,
+            )
+        return {x: getattr(self, x) for x in items}  # type: ignore  # noqa: PGH003

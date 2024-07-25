@@ -19,6 +19,23 @@ type DiscoveryItem = Literal[
     "arp_table",
 ]
 
+type DispatchItem = Literal[
+    "sys_object_id",
+    "hostname",
+    "sys_descr",
+    "chassis_id",
+    "uptime",
+    "interfaces",
+    "lldp_neighbors",
+    "stack",
+    "vlans",
+    "prefixes",
+    "routes",
+    "entities",
+    "mac_address_table",
+    "arp_table",
+]
+
 
 class DeviceType(TypedDict):
     platform: str
@@ -59,27 +76,47 @@ class Interface(TypedDict):
 
 class LldpNeighbor(TypedDict):
     local_chassis_id: str
-    local_port_id: str
+    local_hostname: str
+    local_if_name: str
+    local_if_descr: str
     remote_chassis_id: str
-    remote_port_id: str
+    remote_hostname_id: str
+    remote_if_name: str
+    remote_if_descr: str
 
 
-class DiscoveryData(TypedDict):
+class Entity(TypedDict):
+    ent_physical_class: int
+    ent_physical_descr: str
+    ent_physical_name: str
+    ent_physical_firmware_rev: str
+    ent_physical_hardware_rev: str
+    ent_physical_serial_num: str
+
+
+class DiscoveryException(TypedDict):
+    item: DispatchItem
+    exception: str
+
+
+class SnmpDiscoveryData(TypedDict, total=False):
     hostname: str
     sys_descr: str
     uptime: str
-    device_type: str | None
     chassis_id: str
-    manufacturer: str
-    platform: str
-    serial_number: str
-    version: str
     interfaces: list[Interface]
     lldp_neighbors: list[LldpNeighbor]
     stack: list[dict]
     vlans: list[dict]
     prefixes: list[dict] | None
     routes: list[dict] | None
+    exceptions: list[DiscoveryException]
+
+
+class DiscoveryData(SnmpDiscoveryData):
+    device_type: str
+    manufacturer: str
+    platform: str
 
 
 class DiscoveryResponse(TypedDict):
@@ -89,3 +126,4 @@ class DiscoveryResponse(TypedDict):
     icmp_reachable: bool
     ssh_reachable: bool
     sysObjectID: str | None
+    exceptions: list[DiscoveryException] | None

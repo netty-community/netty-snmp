@@ -182,20 +182,28 @@ ifLastChange = SnmpItem(
 
 lldpLocChassisId = SnmpItem(
     name="lldpLocChassisId",
-    oid=".1.0.8802.1.1.2.1.3.2",
+    oid=".1.0.8802.1.1.2.1.3.2.0",
     description="The lldpLocChassisId value for the interface.",
     value_type="str",
     value_mapping=None,
     to_hex=True,
 )
 
-lldpLocalPortId = SnmpItem(
-    name="lldpLocalPortId",
+lldpLoPortId = SnmpItem(
+    name="lldpLocPortId",
     oid=".1.0.8802.1.1.2.1.3.7.1.3",
     description="The lldpLocalPortId value for the interface.",
     value_type="str",
     value_mapping=None,
     to_hex=True,
+)
+
+lldpLocPortDesc = SnmpItem(
+    name="lldpLocPortDesc",
+    oid=".1.0.8802.1.1.2.1.3.7.1.4",
+    description="The lldpLocPortDesc value for the interface.",
+    value_type="str",
+    value_mapping=None,
 )
 
 dot1dBasePortIfIndex = SnmpItem(
@@ -211,7 +219,7 @@ lldpRemChassisIdSubtype = SnmpItem(
     oid=".1.0.8802.1.1.2.1.4.1.1.4",
     description="The lldpRemChassisIdSubtype value for the interface.",
     value_type="int",
-    value_mapping=None,
+    value_mapping=LLDP_CHASSIS_ID_SUBTYPE_MAPPING,
 )
 
 lldpRemChassisId = SnmpItem(

@@ -1,3 +1,4 @@
+from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from ipaddress import ip_network
 
@@ -5,7 +6,14 @@ from ezsnmp import EzSNMPError, Session
 from icmplib import ping
 from tcppinglib import tcpping
 
-from netty_snmp._types import DeviceType, DiscoveryData, DiscoveryItem, DiscoveryResponse, IPvANyNetwork
+from netty_snmp._types import (
+    DeviceType,
+    DiscoveryData,
+    DiscoveryException,
+    DiscoveryItem,
+    DiscoveryResponse,
+    IPvANyNetwork,
+)
 from netty_snmp.device_type.device_types import Platform, get_device_type
 from netty_snmp.factory import consts
 from netty_snmp.factory.manufactures.arista import AristaSnmpFactory
@@ -58,6 +66,7 @@ class DispatchSnmpFactory:
         self.community = community
         self.v3_params = v3_params
         self.max_workers = max_workers
+        self.exceptions: dict[str, list[DiscoveryException]] = defaultdict(list)
 
     def str_to_prefix(self, prefix: str) -> IPvANyNetwork:
         if "/" not in prefix:
@@ -113,10 +122,16 @@ class DispatchSnmpFactory:
             icmp_reachable=icmp_reachable,
             ssh_reachable=ssh_reachable,
             sysObjectID=None,
+            exceptions=None,
         )
         if not snmp_reachable:
             return discovery_response
-        _sys_object_id = self.sys_object_id(session)
+        try:
+            _sys_object_id = self.sys_object_id(session)
+        except EzSNMPError as e:
+            self.exceptions[ip].append(DiscoveryException(item="sys_object_id", exception=str(e)))
+            discovery_response["exceptions"] = self.exceptions[ip]
+            return discovery_response
         device_type = self.device_type(sys_object_id=_sys_object_id)
         factory = get_factory(device_type["platform"])
         device_data = factory(ip, self.port, self.version, self.community, self.v3_params).discovery(discovery_items)
@@ -127,6 +142,7 @@ class DispatchSnmpFactory:
             **device_data,
         )
         discovery_response["data"] = discovery_data
+        discovery_response["sysObjectID"] = _sys_object_id
         return discovery_response
 
     def dispatch(self, discovery_items: list[DiscoveryItem] | None = None) -> list[DiscoveryResponse]:
