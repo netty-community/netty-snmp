@@ -170,12 +170,12 @@ class SnmpFactory:
         """
         try:
             local_chassis_id = self.chassis_id
-            local_if_name = self.session.get(consts.lldpLoPortId.oid)
-            local_if_descr = self.session.get(consts.lldpLocPortDesc.oid)
-            remote_chassis_id = self.session.get(consts.lldpRemChassisId.oid)
-            remote_hostname = self.session.get(consts.lldpRemSysName.oid)
-            remote_if_name = self.session.get(consts.lldpRemPortId.oid)
-            remote_if_descr = self.session.get(consts.lldpRemPortDesc.oid)
+            local_if_name = self.session.bulkwalk(consts.lldpLoPortId.oid)
+            local_if_descr = self.session.bulkwalk(consts.lldpLocPortDesc.oid)
+            remote_chassis_id = self.session.bulkwalk(consts.lldpRemChassisId.oid)
+            remote_hostname = self.session.bulkwalk(consts.lldpRemSysName.oid)
+            remote_if_name = self.session.bulkwalk(consts.lldpRemPortId.oid)
+            remote_if_descr = self.session.bulkwalk(consts.lldpRemPortDesc.oid)
         except EzSNMPError as e:
             self.exceptions.append(DiscoveryException(item="lldp_neighbors", exception=str(e)))
             return []
