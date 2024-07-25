@@ -55,8 +55,8 @@ class Interface(TypedDict):
     if_mtu: int
     if_speed: int
     if_phys_address: str
-    if_admin_status: int
-    if_oper_status: int
+    if_admin_status: str
+    if_oper_status: str
 
 
 class LldpNeighbor(TypedDict):

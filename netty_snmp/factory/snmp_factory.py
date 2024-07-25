@@ -217,11 +217,11 @@ class SnmpFactory:
         except EzSNMPError as e:
             self.exceptions.append(DiscoveryException(item="entities", exception=str(e)))
             return []
-        index_ent_phy_class = {x.oid_index: x.value for x in ent_phy_class if int(x.value) == 3}  # noqa: PLR2004
-        index_ent_phy_descr = {x.oid_index: x.value for x in ent_phy_descr}
-        index_ent_phy_name = {x.oid_index: x.value for x in ent_phy_name}
-        index_ent_phy_software = {x.oid_index: x.value for x in ent_phy_software}
-        index_ent_phy_serial = {x.oid_index: x.value for x in ent_phy_serial}
+        index_ent_phy_class = {x.oid.split(".")[-1]: x.value for x in ent_phy_class if int(x.value) == 3}  # noqa: PLR2004
+        index_ent_phy_descr = {x.oid.split(".")[-1]: x.value for x in ent_phy_descr}
+        index_ent_phy_name = {x.oid.split(".")[-1]: x.value for x in ent_phy_name}
+        index_ent_phy_software = {x.oid.split(".")[-1]: x.value for x in ent_phy_software}
+        index_ent_phy_serial = {x.oid.split(".")[-1]: x.value for x in ent_phy_serial}
         return [
             Entity(
                 ent_physical_class=int(x),
