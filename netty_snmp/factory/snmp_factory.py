@@ -35,6 +35,14 @@ class SnmpFactory:
         v3_params: SnmpV3Params | None = None,
         model: str | None = None,
     ) -> None:
+        """
+        :param ip: network device ip, ipv4 or ipv6 address
+        :param port: network device snmp agent port, default: 161
+        :param version: SNMP version, default: v2c
+        :param community: SNMP v2 community, default: public
+        :param v3_params: SNMP v3 params
+        :param model: network device model
+        """
         self.ip = ip
         self.port = port
         self.version = version
@@ -45,6 +53,7 @@ class SnmpFactory:
         self.exceptions: list[DiscoveryException] = []
 
     def _session(self) -> Session:
+        """create session for snmp query"""
         if self.version == consts.SnmpVersion.v2c and self.community:
             return Session(
                 hostname=self.ip,
@@ -69,6 +78,9 @@ class SnmpFactory:
 
     @property
     def hostname(self) -> str:
+        """
+        collect network device hostname
+        """
         try:
             return self.session.get(consts.sysName.oid).value
         except EzSNMPError as e:
@@ -77,6 +89,10 @@ class SnmpFactory:
 
     @property
     def sys_descr(self) -> str:
+        """
+        collect network device system description, include model/version/patch information
+        without structured dataformat
+        """
         try:
             return self.session.get(consts.sysDescr.oid).value
         except EzSNMPError as e:
@@ -85,6 +101,9 @@ class SnmpFactory:
 
     @property
     def uptime(self) -> str:
+        """
+        collect network device uptime`
+        """
         try:
             return self.session.get(consts.sysUpTime.oid).value
         except EzSNMPError as e:
@@ -105,6 +124,9 @@ class SnmpFactory:
 
     @property
     def interfaces(self) -> list[Interface]:
+        """
+        collect interfaces via `IF-MIB`, if filtering by the items, implement it the manufacturer factory
+        """
         try:
             if_index = self.session.bulkwalk(consts.ifIndex.oid)
             if_name = self.session.bulkwalk(consts.ifDescr.oid)
@@ -140,7 +162,12 @@ class SnmpFactory:
         ]
 
     @property
-    def lldp_neighbors(self) -> Any:
+    def lldp_neighbors(self) -> list[LldpNeighbor]:
+        """
+        collect lldp neighbors via `LLDP-MIB`
+        Special configuration for network devices: include iso mib-2 view in snmp configuration
+        lldpRemChassisID: snmp_index value the last of 2 is localportID's index(last of 1)
+        """
         try:
             local_chassis_id = self.chassis_id
             local_if_name = self.session.get(consts.lldpLoPortId.oid)
@@ -228,6 +255,13 @@ class SnmpFactory:
     def arp_table(self) -> Any: ...
 
     def discovery(self, items: list[DiscoveryItem] | None = None) -> SnmpDiscoveryData:
+        """
+        discovery network basic information via SNMP
+        params:
+            items: list of `DiscoveryItem` to collect, if not specified, all items will be collected
+        returns:
+            SnmpDiscoveryData: all collected items
+        """
         if not items:
             return SnmpDiscoveryData(
                 hostname=self.hostname,

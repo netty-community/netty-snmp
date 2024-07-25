@@ -12,6 +12,7 @@ from netty_snmp._types import (
     DiscoveryException,
     DiscoveryItem,
     DiscoveryResponse,
+    DispatchItem,
     IPvANyNetwork,
 )
 from netty_snmp.device_type.device_types import Platform, get_device_type
@@ -110,40 +111,60 @@ class DispatchSnmpFactory:
             raise ValueError("Unsupported SNMP version")
         return session
 
-    def _dispatch(self, ip: str, discovery_items: list[DiscoveryItem] | None = None) -> DiscoveryResponse:
-        session = self.get_snmp_session(ip)
-        icmp_reachable = ping(ip, count=2, interval=0.2, timeout=1, privileged=False).is_alive
-        ssh_reachable = tcpping(ip, port=22, timeout=1, count=2, interval=0.2).is_alive
-        snmp_reachable = self.snmp_reachable(session)
+    def _dispatch(self, ip_address: str, discovery_items: list[DiscoveryItem] | None = None) -> DiscoveryResponse:
+        snmp_session = self.get_snmp_session(ip_address)
+        icmp_reachable = self._is_icmp_reachable(ip_address)
+        ssh_reachable = self._is_ssh_reachable(ip_address)
+        snmp_reachable = self.snmp_reachable(snmp_session)
+
         discovery_response = DiscoveryResponse(
-            ip=ip,
+            ip=ip_address,
             data=None,
             snmp_reachable=snmp_reachable,
             icmp_reachable=icmp_reachable,
             ssh_reachable=ssh_reachable,
-            sysObjectID=None,
+            sys_object_id=None,
             exceptions=None,
         )
+
         if not snmp_reachable:
             return discovery_response
+
         try:
-            _sys_object_id = self.sys_object_id(session)
+            sys_object_id = self.sys_object_id(snmp_session)
         except EzSNMPError as e:
-            self.exceptions[ip].append(DiscoveryException(item="sys_object_id", exception=str(e)))
-            discovery_response["exceptions"] = self.exceptions[ip]
+            self._handle_snmp_error(ip_address, "sys_object_id", e)
             return discovery_response
-        device_type = self.device_type(sys_object_id=_sys_object_id)
+
+        device_type = self.device_type(sys_object_id)
         factory = get_factory(device_type["platform"])
-        device_data = factory(ip, self.port, self.version, self.community, self.v3_params).discovery(discovery_items)
+        device_data = factory(ip_address, self.port, self.version, self.community, self.v3_params).discovery(
+            discovery_items
+        )
+
         discovery_data = DiscoveryData(
             device_type=device_type["model"],
             manufacturer=device_type["manufacturer"],
             platform=device_type["platform"],
             **device_data,
         )
+
         discovery_response["data"] = discovery_data
-        discovery_response["sysObjectID"] = _sys_object_id
+        discovery_response["sys_object_id"] = sys_object_id
+
         return discovery_response
+
+    @staticmethod
+    def _is_icmp_reachable(ip_address: str) -> bool:
+        return ping(ip_address, count=2, interval=0.2, timeout=1, privileged=False).is_alive
+
+    @staticmethod
+    def _is_ssh_reachable(ip_address: str) -> bool:
+        return tcpping(ip_address, port=22, timeout=1, count=2, interval=0.2).is_alive
+
+    def _handle_snmp_error(self, ip_address: str, item: DispatchItem, exception: EzSNMPError) -> None:
+        self.exceptions.setdefault(ip_address, []).append(DiscoveryException(item=item, exception=str(exception)))
+        self.exceptions[ip_address].append(DiscoveryException(item=item, exception=str(exception)))
 
     def dispatch(self, discovery_items: list[DiscoveryItem] | None = None) -> list[DiscoveryResponse]:
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:

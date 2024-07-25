@@ -19,22 +19,7 @@ type DiscoveryItem = Literal[
     "arp_table",
 ]
 
-type DispatchItem = Literal[
-    "sys_object_id",
-    "hostname",
-    "sys_descr",
-    "chassis_id",
-    "uptime",
-    "interfaces",
-    "lldp_neighbors",
-    "stack",
-    "vlans",
-    "prefixes",
-    "routes",
-    "entities",
-    "mac_address_table",
-    "arp_table",
-]
+type DispatchItem = Literal["sys_object_id"]
 
 
 class DeviceType(TypedDict):
@@ -95,7 +80,7 @@ class Entity(TypedDict):
 
 
 class DiscoveryException(TypedDict):
-    item: DispatchItem
+    item: DispatchItem | DiscoveryItem
     exception: str
 
 
@@ -125,5 +110,5 @@ class DiscoveryResponse(TypedDict):
     snmp_reachable: bool
     icmp_reachable: bool
     ssh_reachable: bool
-    sysObjectID: str | None
+    sys_object_id: str | None
     exceptions: list[DiscoveryException] | None
