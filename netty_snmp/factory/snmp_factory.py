@@ -196,7 +196,7 @@ class SnmpFactory:
                 remote_if_name=index_remote_if_name[x],
                 remote_if_descr=index_remote_if_descr[x],
             )
-            for x in index_local_if_name
+            for x in remote_chassis_id
         ]
 
     @property
