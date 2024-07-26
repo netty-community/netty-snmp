@@ -6,6 +6,7 @@ SNMP `SysObjectId` and collect a lot of network basic information with friendly 
 exceptions traceback.
 
 Inspirations of SNMP and why not command line tools(CLI):
+
 CLI output is un-structure data, we need use regex/textfsm liked tools to extract the information
 from network device output. It's very painful to maintain the string-based regex code and very hard to
 extend. SNMP is fast, stable to get and all data is structured which is easy to handle by code, also it's
