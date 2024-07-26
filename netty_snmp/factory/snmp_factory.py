@@ -210,14 +210,17 @@ class SnmpFactory:
         """
         try:
             ent_phy_class = self.session.bulkwalk(consts.entPhysicalClass.oid)
-            ent_phy_descr = self.session.bulkwalk(consts.entPhysicalDescr.oid)
-            ent_phy_name = self.session.bulkwalk(consts.entPhysicalName.oid)
-            ent_phy_software = self.session.bulkwalk(consts.entPhysicalSoftwareRev.oid)
-            ent_phy_serial = self.session.bulkwalk(consts.entPhysicalSerialNum.oid)
+            index_ent_phy_class = {x.oid.split(".")[-1]: x.value for x in ent_phy_class if int(x.value) == 3}  # noqa: PLR2004
+            oids = list(index_ent_phy_class.keys())
+            if not oids:
+                return []
+            ent_phy_descr = self.session.get([consts.entPhysicalDescr.oid + "." + x for x in oids])
+            ent_phy_name = self.session.get([consts.entPhysicalName.oid + "." + x for x in oids])
+            ent_phy_software = self.session.get([consts.entPhysicalSoftwareRev.oid + "." + x for x in oids])
+            ent_phy_serial = self.session.get([consts.entPhysicalSerialNum.oid + "." + x for x in oids])
         except EzSNMPError as e:
             self.exceptions.append(DiscoveryException(item="entities", exception=str(e)))
             return []
-        index_ent_phy_class = {x.oid.split(".")[-1]: x.value for x in ent_phy_class if int(x.value) == 3}  # noqa: PLR2004
         index_ent_phy_descr = {x.oid.split(".")[-1]: x.value for x in ent_phy_descr}
         index_ent_phy_name = {x.oid.split(".")[-1]: x.value for x in ent_phy_name}
         index_ent_phy_software = {x.oid.split(".")[-1]: x.value for x in ent_phy_software}
