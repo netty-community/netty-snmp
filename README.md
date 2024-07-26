@@ -71,7 +71,7 @@ print(dis.discovery())
   - Interface Operational Status
   - Interface IP Addresses: (L3 Interface)
   - Interface Port Mode: access/trunk/hybrid ...
-- **LLDP Neighbors**: lldp information will local and remote connection info
+- **LLDP Neighbors**: lldp information with local and remote connection info
   - Local Chassis Id: the unique identifier mac address of chassis
   - Local Hostname: the hostname of local device
   - Local Interface Name
