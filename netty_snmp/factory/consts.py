@@ -7,6 +7,7 @@ SNMP_DEFAULT_COMMUNITY = "public"
 UNKNOWN_MANUFACTURER = "Unknown"
 UNKNOWN_PLATFORM = "Unknown"
 UNKNOWN_MODEL = "Unknown"
+UNKNOWN_PORT_MODE = "Unknown"
 
 
 class SnmpVersion(IntEnum):
@@ -177,6 +178,36 @@ ifLastChange = SnmpItem(
     value_type="int",
     value_mapping=None,
 )
+
+ifAlias = SnmpItem(
+    name="ifAlias",
+    oid=".1.3.6.1.2.1.31.1.1.1.18.0",
+    description="The ifAlias value for the interface.",
+    value_type="str",
+    value_mapping=None,
+)
+ifHighSpeed = SnmpItem(
+    name="ifHighSpeed",
+    oid=".1.3.6.1.2.1.31.1.1.1.15",
+    description="The ifHighSpeed value for the interface.",
+    value_type="int",
+    value_mapping=None,
+)
+ifAdEntIfIndex = SnmpItem(
+    name="ifAdEntIfIndex",
+    oid="1.3.6.1.2.1.4.20.1.2",
+    description="The ifAdEntIfIndex value for the interface.",
+    value_type="int",
+    value_mapping=None,
+)
+ifAdEntNetMask = SnmpItem(
+    name="ifAdEntNetMask",
+    oid="1.3.6.1.2.1.4.20.1.3",
+    description="The ifAdEntNetMask value for the interface.",
+    value_type="str",
+    value_mapping=None,
+)
+
 
 # ---------- lldp ---------- #
 

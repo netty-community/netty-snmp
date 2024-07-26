@@ -1,3 +1,5 @@
+from collections import defaultdict
+from ipaddress import ip_interface
 from typing import Any, Literal, TypedDict
 
 from ezsnmp import EzSNMPError, Session
@@ -113,7 +115,7 @@ class SnmpFactory:
     @property
     def chassis_id(self) -> Any:
         """
-        collect chasis id via `LLDP-MIB`.
+        collect chassis id via `LLDP-MIB`.
         Special configuration for Huawei: snmp should include iso view and mib-2
         """
         try:
@@ -123,6 +125,13 @@ class SnmpFactory:
             return ""
 
     @property
+    def if_port_mode(self) -> dict[str, str]:
+        """
+        collect interface port mode, need implement in manufacturer factory
+        """
+        return {}
+
+    @property
     def interfaces(self) -> list[Interface]:
         """
         collect interfaces via `IF-MIB`, if filtering by the items, implement it the manufacturer factory
@@ -130,33 +139,46 @@ class SnmpFactory:
         try:
             if_index = self.session.bulkwalk(consts.ifIndex.oid)
             if_name = self.session.bulkwalk(consts.ifDescr.oid)
+            if_descr = self.session.bulkwalk(consts.ifAlias.oid)
             if_mtu = self.session.bulkwalk(consts.ifMtu.oid)
             if_speed = self.session.bulkwalk(consts.ifSpeed.oid)
             if_type = self.session.bulkwalk(consts.ifType.oid)
             if_phys_addr = self.session.bulkwalk(consts.ifPhysAddr.oid)
             if_admin = self.session.bulkwalk(consts.ifAdminStatus.oid)
             if_oper = self.session.bulkwalk(consts.ifOperStatus.oid)
+            if_addr_index = self.session.bulkwalk(consts.ifAdEntIfIndex.oid)
+            if_addr_netmask = self.session.bulkwalk(consts.ifAdEntNetMask.oid)
+            if_port_mode = self.if_port_mode
         except EzSNMPError as e:
             self.exceptions.append(DiscoveryException(item="interfaces", exception=str(e)))
             return []
         index_if_index = {x.oid_index: x.value for x in if_index}
         index_if_name = {x.oid_index: x.value for x in if_name}
+        index_if_descr = {x.oid_index: x.value for x in if_descr}
         index_if_mtu = {x.oid_index: x.value for x in if_mtu}
         index_if_speed = {x.oid_index: x.value for x in if_speed}
         index_if_type = {x.oid_index: x.value for x in if_type}
-        if_phys_addr = {x.oid_index: x.value for x in if_phys_addr}
+        index_if_phys_addr = {x.oid_index: x.value for x in if_phys_addr}
         index_if_admin = {x.oid_index: x.value for x in if_admin}
         index_if_oper = {x.oid_index: x.value for x in if_oper}
+        index_if_addr_index = defaultdict(list)
+        index_if_addr_netmask = {x.oid_index: x.value for x in if_addr_netmask}
+        for x in if_addr_index:
+            netmask = index_if_addr_netmask[x.oid_index]
+            index_if_addr_index[x.value].append(ip_interface(f"{x.oid_index}/{netmask}"))
         return [
             Interface(
                 if_index=int(x),
-                if_descr=index_if_name[x],
+                if_name=index_if_name[x],
+                if_descr=index_if_descr[x],
                 if_mtu=int(index_if_mtu[x]),
                 if_speed=int(index_if_speed[x]),
                 if_type=index_if_type[x],
-                if_phys_address=mac_address_validator(if_phys_addr[x]),
+                if_phys_address=mac_address_validator(index_if_phys_addr[x]),
                 if_admin_status=index_if_admin[x],
                 if_oper_status=index_if_oper[x],
+                if_ip_address=index_if_addr_index[x],
+                if_port_mode=self.if_port_mode.get(index_if_name[x], consts.UNKNOWN_PORT_MODE),
             )
             for x in index_if_index
         ]
