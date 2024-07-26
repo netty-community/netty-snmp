@@ -1,4 +1,4 @@
-# Network Device information Discovery via SNMp
+# Network Device information Discovery via SNMP
 
 Netty_snmp is a flexible,powerful,high performance tool for network device information collection.
 It will recognize network device's manufacture and platform(netmiko driver) automatically through
