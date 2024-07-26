@@ -142,6 +142,7 @@ class SnmpFactory:
             if_descr = self.session.bulkwalk(consts.ifAlias.oid)
             if_mtu = self.session.bulkwalk(consts.ifMtu.oid)
             if_speed = self.session.bulkwalk(consts.ifSpeed.oid)
+            if_high_speed = self.session.bulkwalk(consts.ifHighSpeed.oid)
             if_type = self.session.bulkwalk(consts.ifType.oid)
             if_phys_addr = self.session.bulkwalk(consts.ifPhysAddr.oid)
             if_admin = self.session.bulkwalk(consts.ifAdminStatus.oid)
@@ -157,6 +158,7 @@ class SnmpFactory:
         index_if_descr = {x.oid_index: x.value for x in if_descr}
         index_if_mtu = {x.oid_index: x.value for x in if_mtu}
         index_if_speed = {x.oid_index: x.value for x in if_speed}
+        index_if_high_speed = {x.oid_index: x.value for x in if_high_speed}
         index_if_type = {x.oid_index: x.value for x in if_type}
         index_if_phys_addr = {x.oid_index: x.value for x in if_phys_addr}
         index_if_admin = {x.oid_index: x.value for x in if_admin}
@@ -173,12 +175,13 @@ class SnmpFactory:
                 if_descr=index_if_descr[x],
                 if_mtu=int(index_if_mtu[x]),
                 if_speed=int(index_if_speed[x]),
+                if_high_speed=int(index_if_high_speed[x]),
                 if_type=index_if_type[x],
                 if_phys_address=mac_address_validator(index_if_phys_addr[x]),
                 if_admin_status=index_if_admin[x],
                 if_oper_status=index_if_oper[x],
                 if_ip_address=index_if_addr_index[x],
-                if_port_mode=self.if_port_mode.get(index_if_name[x], consts.UNKNOWN_PORT_MODE),
+                if_port_mode=if_port_mode.get(x, consts.UNKNOWN_PORT_MODE),
             )
             for x in index_if_index
         ]
