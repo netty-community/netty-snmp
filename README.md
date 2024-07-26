@@ -4,6 +4,14 @@ Netty_snmp is a flexible,powerful,high performance tool for network device infor
 It will recognize network device's manufacture and platform(netmiko driver) automatically through
 SNMP `SysObjectId` and collect a lot of network basic information with friendly output format and
 exceptions traceback.
+> Inspirations of SNMP and why not command line tools(CLI)
+CLI output is un-structure data, we need use regex/textfsm liked tools to extract the information
+from network device output. It's very painful to maintain the string-based regex code and very hard to
+extend. SNMP is fast, stable to get and all data is structured which is easy to handle by code, also it's
+much easier to maintain the codebase, some of items is generic for all network manufacturers, such
+as interface, hostname, lldp neighbors. One time coding and support all vendors, fancy, right?
+So, personally use snmp to collect basic information of network device is a better choice than CLI.
+
 
 ## Installation Guide
 > soon coming
@@ -71,7 +79,7 @@ print(dis.discovery())
   - Interface Operational Status
   - Interface IP Addresses: (L3 Interface)
   - Interface Port Mode: access/trunk/hybrid ...
-- **LLDP Neighbors**: lldp information with local and remote connection info
+- **LLDP Neighbors**: lldp information will local and remote connection info
   - Local Chassis Id: the unique identifier mac address of chassis
   - Local Hostname: the hostname of local device
   - Local Interface Name
@@ -108,3 +116,11 @@ print(dis.discovery())
 - Fortinet
 - PaloAlto
 - Juniper
+
+
+## Development Guide
+1. install [rye](https://rye.astral.sh/guide/installation/) for python project management
+2. execute `rye sync` to install dependencies
+3. execute `pre-commit install` for lint and pytest hooks
+4. perform you code changes and execute `pre-commit` to do static code check and unit test.
+5. push changes to the codebase.
