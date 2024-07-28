@@ -465,6 +465,66 @@ cswSwitchMacAddress = SnmpItem(
     value_mapping=None,
 )
 
+# --------- stack H3C --------
+h3cStackMemberID = SnmpItem(
+    name="h3cStackMemberID",
+    oid=".1.3.6.1.4.1.2011.10.2.91.2.1.1",
+    description="The ID of the H3C stack member.",
+    value_type="int",
+    value_mapping=None,
+)
+h3cStackConfigMemberID = SnmpItem(
+    name="h3cStackConfigMemberID",
+    oid=".1.3.6.1.4.1.2011.10.2.91.2.1.2",
+    description="The config ID of the H3C stack member.",
+    value_type="int",
+    value_mapping=None,
+)
+h3cStackPriority = SnmpItem(
+    name="h3cStackPriority",
+    oid=".1.3.6.1.4.1.2011.10.2.91.2.1.3",
+    description="The priority of the H3C stack member.",
+    value_type="int",
+    value_mapping=None,
+)
+# ---------- RuiJie stack ----------
+scMemberMacAddress = SnmpItem(
+    name="scMemberMacAddress",
+    oid=".1.3.6.1.4.1.4881.1.1.10.2.31.1.2.1.1.1",
+    description="The MAC address of the RuiJie stack member.",
+    value_type="str",
+    value_mapping=None,
+    to_hex=True,
+)
+scMemberNumber = SnmpItem(
+    name="scMemberNumber",
+    oid=".1.3.6.1.4.1.4881.1.1.10.2.31.1.2.1.1.2",
+    description="The number of the RuiJie stack member.",
+    value_type="int",
+    value_mapping=None,
+)
+scMemberOperStatus = SnmpItem(
+    name="scMemberOperStatus",
+    oid=".1.3.6.1.4.1.4881.1.1.10.2.31.1.2.1.1.3",
+    description="The oper status of the RuiJie stack member.",
+    value_type="int",
+    value_mapping=HW_STACK_RUN_MAPPING,
+)
+scMemberDeviceID = SnmpItem(
+    name="scMemberDeviceID",
+    oid=".1.3.6.1.4.1.4881.1.1.10.2.31.1.2.1.1.4",
+    description="The value of mac address of neighbor lldp pdu.",
+    value_type="str",
+    value_mapping=None,
+    to_hex=True,
+)
+scMemberRowStatus = SnmpItem(
+    name="scMemberRowStatus",
+    oid=".1.3.6.1.4.1.4881.1.1.10.2.31.1.2.1.1.5",
+    description="The row status of the RuiJie stack member.",
+    value_type="int",
+    value_mapping=None,
+)
 
 panSysSwVersion = SnmpItem(
     name="panSysSwVersion",

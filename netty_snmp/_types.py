@@ -82,6 +82,13 @@ class Entity(TypedDict):
     ent_physical_serial_num: str
 
 
+class StackMember(TypedDict):
+    id: int
+    priority: int
+    role: str
+    mac_address: str
+
+
 class DiscoveryException(TypedDict):
     item: DispatchItem | DiscoveryItem
     exception: str

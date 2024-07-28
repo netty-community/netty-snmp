@@ -26,6 +26,7 @@ class Manufacturer(StrEnum):
     Netgear = "Netgear"
     TPLink = "TP-Link"
     Ruckus = "Ruckus"
+    CheckPoint = "CheckPoint"
 
 
 class Platform(StrEnum):
@@ -62,6 +63,7 @@ EnterpriseIdManufacturer: dict[str, Manufacturer] = {
     "4562": Manufacturer.Netgear,
     "11863": Manufacturer.TPLink,
     "25053": Manufacturer.Ruckus,
+    "2620": Manufacturer.CheckPoint,
 }
 
 
