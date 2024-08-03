@@ -173,16 +173,16 @@ class SnmpFactory:
         return [
             Interface(
                 if_index=int(x),
-                if_name=index_if_name[x],
-                if_descr=index_if_descr[x],
-                if_mtu=int(index_if_mtu[x]),
-                if_speed=int(index_if_speed[x]),
-                if_high_speed=int(index_if_high_speed[x]),
-                if_type=index_if_type[x],
-                if_phys_address=mac_address_validator(index_if_phys_addr[x]),
-                if_admin_status=index_if_admin[x],
-                if_oper_status=index_if_oper[x],
-                if_ip_address=index_if_addr_index[x],
+                if_name=index_if_name.get(x),
+                if_descr=index_if_descr.get(x),
+                if_mtu=int(index_if_mtu.get(x)),
+                if_speed=int(index_if_speed.get(x)),
+                if_high_speed=int(index_if_high_speed.get(x)),
+                if_type=index_if_type.get(x),
+                if_phys_address=mac_address_validator(index_if_phys_addr.get(x)),
+                if_admin_status=index_if_admin.get(x),
+                if_oper_status=index_if_oper.get(x),
+                if_ip_address=index_if_addr_index.get(x),
                 if_port_mode=if_port_mode.get(x, consts.UNKNOWN_PORT_MODE),
             )
             for x in index_if_index
@@ -225,12 +225,12 @@ class SnmpFactory:
             LldpNeighbor(
                 local_chassis_id=local_chassis_id,
                 local_hostname=self.hostname,
-                local_if_name=index_local_if_name[x],
-                local_if_descr=index_local_if_descr[x],
-                remote_chassis_id=index_remote_chassis_id[x],
-                remote_hostname_id=index_remote_hostname[x],
-                remote_if_name=index_remote_if_name[x],
-                remote_if_descr=index_remote_if_descr[x],
+                local_if_name=index_local_if_name.get(x),
+                local_if_descr=index_local_if_descr.get(x),
+                remote_chassis_id=index_remote_chassis_id.get(x),
+                remote_hostname_id=index_remote_hostname.get(x),
+                remote_if_name=index_remote_if_name.get(x),
+                remote_if_descr=index_remote_if_descr.get(x),
             )
             for x in index_remote_chassis_id
             if x is not None
@@ -265,10 +265,10 @@ class SnmpFactory:
         return [
             Entity(
                 ent_physical_class=int(x),
-                ent_physical_descr=index_ent_phy_descr[x],
-                ent_physical_name=index_ent_phy_name[x],
-                ent_physical_software_rev=index_ent_phy_software[x],
-                ent_physical_serial_num=index_ent_phy_serial[x],
+                ent_physical_descr=index_ent_phy_descr.get(x),
+                ent_physical_name=index_ent_phy_name.get(x),
+                ent_physical_software_rev=index_ent_phy_software.get(x),
+                ent_physical_serial_num=index_ent_phy_serial.get(x),
             )
             for x in index_ent_phy_class
             if x is not None

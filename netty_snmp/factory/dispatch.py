@@ -89,7 +89,7 @@ class DispatchSnmpFactory:
             result = None
         return result is not None
 
-    def sys_object_id(self, session: Session) -> str:
+    def sys_object_id(self, session: Session) -> str | None:
         return session.get(consts.sysObjectID.oid).value
 
     def device_type(self, sys_object_id: str) -> "DeviceType":
@@ -138,8 +138,11 @@ class DispatchSnmpFactory:
             self._handle_snmp_error(ip_address, "sys_object_id", e)
             return discovery_response
 
+        if not sys_object_id:
+            return discovery_response
+
         device_type = self.device_type(sys_object_id)
-        factory = get_factory(device_type["platform"])
+        factory = get_factory(device_type["platform"])  # type: ignore  # noqa: PGH003
         device_data = factory(
             ip=ip_address,
             port=self.port,
@@ -163,7 +166,7 @@ class DispatchSnmpFactory:
 
     @staticmethod
     def _is_icmp_reachable(ip_address: str) -> bool:
-        return ping(ip_address, count=2, interval=0.2, timeout=1, privileged=False).is_alive
+        return ping(ip_address, count=2, interval=0.2, timeout=1, privileged=False).is_alive  # type: ignore  # noqa: PGH003
 
     @staticmethod
     def _is_ssh_reachable(ip_address: str) -> bool:

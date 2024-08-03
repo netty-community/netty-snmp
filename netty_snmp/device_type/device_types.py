@@ -27,6 +27,7 @@ class Manufacturer(StrEnum):
     TPLink = "TP-Link"
     Ruckus = "Ruckus"
     CheckPoint = "CheckPoint"
+    Sangfor = "Sangfor"
 
 
 class Platform(StrEnum):
@@ -48,6 +49,7 @@ class Platform(StrEnum):
     Netgear = "netgear_prosafe"
     TPLink = "tplink_jetstream"
     Ruckus = "ruckus_fastiron"
+    Sangfor = "Unknown"
 
 
 EnterpriseIdManufacturer: dict[str, Manufacturer] = {
@@ -64,6 +66,7 @@ EnterpriseIdManufacturer: dict[str, Manufacturer] = {
     "11863": Manufacturer.TPLink,
     "25053": Manufacturer.Ruckus,
     "2620": Manufacturer.CheckPoint,
+    "30547": Manufacturer.Sangfor,
 }
 
 

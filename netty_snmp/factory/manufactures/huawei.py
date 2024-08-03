@@ -14,9 +14,8 @@ class HuaweiSnmpFactory(SnmpFactory):
         version: consts.SnmpVersion = consts.SnmpVersion.v2c,
         community: str | None = consts.SNMP_DEFAULT_COMMUNITY,
         v3_params: SnmpV3Params | None = None,
-        model: str | None = None,
     ) -> None:
-        super().__init__(ip, port, version, community, v3_params, model)
+        super().__init__(ip, port, version, community, v3_params)
 
     @property
     def stack(self) -> list[StackMember]:
@@ -46,10 +45,10 @@ class HuaweiSnmpFactory(SnmpFactory):
         index_hw_stack_mac_address = {x.oid_index: mac_address_validator(x.value) for x in hw_stack_mac_address}
         return [
             StackMember(
-                id=index_hw_stack_id[x],
-                priority=index_hw_stack_priority[x],
-                role=index_hw_stack_role[x],
-                mac_address=index_hw_stack_mac_address[x],
+                id=index_hw_stack_id.get(x),
+                priority=index_hw_stack_priority.get(x),
+                role=index_hw_stack_role.get(x),
+                mac_address=index_hw_stack_mac_address.get(x),
             )
             for x in index_hw_stack_id
         ]
