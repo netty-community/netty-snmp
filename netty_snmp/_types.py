@@ -1,47 +1,25 @@
-import sys
 from ipaddress import IPv4Network, IPv6Network
 from typing import Literal, NamedTuple, TypeAlias, TypedDict
 
-if sys.version_info >= (3, 12):  # noqa: UP036
-    type IPvANyNetwork = IPv4Network | IPv6Network
+IPvANyNetwork: TypeAlias = IPv4Network | IPv6Network  # noqa: UP040
 
-    type DiscoveryItem = Literal[
-        "hostname",
-        "sys_descr",
-        "chassis_id",
-        "uptime",
-        "interfaces",
-        "lldp_neighbors",
-        "stack",
-        "vlans",
-        "prefixes",
-        "routes",
-        "entities",
-        "mac_address_table",
-        "arp_table",
-    ]
+DiscoveryItem: TypeAlias = Literal[  # noqa: UP040
+    "hostname",
+    "sys_descr",
+    "chassis_id",
+    "uptime",
+    "interfaces",
+    "lldp_neighbors",
+    "stack",
+    "vlans",
+    "prefixes",
+    "routes",
+    "entities",
+    "mac_address_table",
+    "arp_table",
+]
 
-    type DispatchItem = Literal["sys_object_id"]
-else:
-    IPvANyNetwork: TypeAlias = IPv4Network | IPv6Network  # noqa: UP040
-
-    DiscoveryItem: TypeAlias = Literal[  # noqa: UP040
-        "hostname",
-        "sys_descr",
-        "chassis_id",
-        "uptime",
-        "interfaces",
-        "lldp_neighbors",
-        "stack",
-        "vlans",
-        "prefixes",
-        "routes",
-        "entities",
-        "mac_address_table",
-        "arp_table",
-    ]
-
-    DispatchItem: TypeAlias = Literal["sys_object_id"]  # noqa: UP040
+DispatchItem: TypeAlias = Literal["sys_object_id"]  # noqa: UP040
 
 
 class DeviceType(TypedDict):

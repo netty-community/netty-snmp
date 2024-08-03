@@ -3,12 +3,12 @@ from netty_snmp import DispatchSnmpFactory, consts
 
 def test_dispatch():
     factory = DispatchSnmpFactory(
-        prefix="192.168.1.0/24",
+        prefix="192.168.1.0/26",
         port=161,
         version=consts.SnmpVersion.v2c,
         community="public",
         snmp_max_repetitions=20,
-        max_workers=16,
+        max_workers=64,
     )
 
     result = factory.dispatch()

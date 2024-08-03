@@ -72,7 +72,7 @@ max-complexity = 15
 
 
 [tool.pytest.ini_options]
-addopts = "--cov-report term --cov-config=.coveragerc -W ignore --cov=src -v"
+addopts = "--cov-report term --cov-report xml:coverage.xml --cov-config=.coveragerc -W ignore --cov=netty_snmp -v"
 xfail_strict = true
 asyncio_mode = "auto"
 markers = ["pytest.mark.asyncio"]
