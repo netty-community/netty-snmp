@@ -95,10 +95,10 @@ class DiscoveryException(TypedDict):
 
 
 class SnmpDiscoveryData(TypedDict, total=False):
-    hostname: str
-    sys_descr: str
-    uptime: str
-    chassis_id: str
+    hostname: str | None
+    sys_descr: str | None
+    uptime: str | None
+    chassis_id: str | None
     interfaces: list[Interface]
     lldp_neighbors: list[LldpNeighbor]
     stack: list[dict]

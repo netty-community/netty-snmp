@@ -4,6 +4,7 @@ from netty_snmp._types import SnmpItem
 
 SNMP_DEFAULT_PORT = 161
 SNMP_DEFAULT_COMMUNITY = "public"
+SNMP_MAX_repetitions = 50
 UNKNOWN_MANUFACTURER = "Unknown"
 UNKNOWN_PLATFORM = "Unknown"
 UNKNOWN_MODEL = "Unknown"

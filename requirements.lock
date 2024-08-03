@@ -10,7 +10,7 @@
 #   universal: false
 
 -e file:.
-ezsnmp==1.0.0rc2
+ezsnmp==1.0.0rc3
     # via netty-snmp
 icmplib==3.0.4
     # via netty-snmp

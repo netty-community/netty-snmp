@@ -24,7 +24,7 @@ from netty_snmp.factory.manufactures.fortinet import FortinetSnmpFactory
 from netty_snmp.factory.manufactures.h3c import H3cSnmpFactory
 from netty_snmp.factory.manufactures.huawei import HuaweiSnmpFactory
 from netty_snmp.factory.manufactures.juniper import JuniperSnmpFactory
-from netty_snmp.factory.manufactures.paloalto import PaloaltoSnmpFactory
+from netty_snmp.factory.manufactures.paloalto import PaloAltoSnmpFactory
 from netty_snmp.factory.manufactures.ruijie import RuijieSnmpFactory
 from netty_snmp.factory.snmp_factory import SnmpFactory, SnmpV3Params
 
@@ -45,7 +45,7 @@ def get_factory(platform: Platform) -> type[SnmpFactory]:
         Platform.Aruba: ArubaSnmpFactory,
         Platform.RuiJie: RuijieSnmpFactory,
         Platform.Juniper: JuniperSnmpFactory,
-        Platform.PaloAlto: PaloaltoSnmpFactory,
+        Platform.PaloAlto: PaloAltoSnmpFactory,
     }
 
     return factories.get(platform, SnmpFactory)
@@ -59,6 +59,7 @@ class DispatchSnmpFactory:
         version: consts.SnmpVersion = consts.SnmpVersion.v2c,
         community: str | None = consts.SNMP_DEFAULT_COMMUNITY,
         v3_params: SnmpV3Params | None = None,
+        snmp_max_repetitions: int = 20,
         max_workers: int = 16,
     ) -> None:
         self.prefix = self.str_to_prefix(prefix)
@@ -68,6 +69,7 @@ class DispatchSnmpFactory:
         self.v3_params = v3_params
         self.max_workers = max_workers
         self.exceptions: dict[str, list[DiscoveryException]] = defaultdict(list)
+        self.snmp_max_repetitions = snmp_max_repetitions
 
     def str_to_prefix(self, prefix: str) -> IPvANyNetwork:
         if "/" not in prefix:
@@ -103,10 +105,10 @@ class DispatchSnmpFactory:
     def get_snmp_session(self, ip: str) -> Session:
         if self.version == consts.SnmpVersion.v2c and self.community:
             session = Session(
-                hostname=ip, remote_port=self.port, community=self.community, version=consts.SnmpVersion.v2c
+                hostname=ip, remote_port=self.port, community=self.community, version=consts.SnmpVersion.v2c.value
             )
         elif self.version == consts.SnmpVersion.v3 and self.v3_params:
-            session = Session(hostname=ip, remote_port=self.port, version=consts.SnmpVersion.v3, **self.v3_params)
+            session = Session(hostname=ip, remote_port=self.port, version=consts.SnmpVersion.v3.value, **self.v3_params)
         else:
             raise ValueError("Unsupported SNMP version")
         return session
@@ -138,9 +140,14 @@ class DispatchSnmpFactory:
 
         device_type = self.device_type(sys_object_id)
         factory = get_factory(device_type["platform"])
-        device_data = factory(ip_address, self.port, self.version, self.community, self.v3_params).discovery(
-            discovery_items
-        )
+        device_data = factory(
+            ip=ip_address,
+            port=self.port,
+            version=self.version,
+            community=self.community,
+            v3_params=self.v3_params,
+            snmp_max_repetitions=self.snmp_max_repetitions,
+        ).discovery(discovery_items)
 
         discovery_data = DiscoveryData(
             device_type=device_type["model"],

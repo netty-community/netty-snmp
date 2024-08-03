@@ -2,7 +2,7 @@ from netty_snmp.factory import consts
 from netty_snmp.factory.snmp_factory import SnmpFactory, SnmpV3Params
 
 
-class PaloaltoSnmpFactory(SnmpFactory):
+class PaloAltoSnmpFactory(SnmpFactory):
     def __init__(
         self,
         ip: str,

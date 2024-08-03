@@ -7,7 +7,7 @@ authors = [
 ]
 dependencies = [
     "tcppinglib>=2.0.3",
-    "ezsnmp>=1.0.0rc2",
+    "ezsnmp>=1.0.0rc3",
     "icmplib>=3.0.4",
 ]
 readme = "README.md"

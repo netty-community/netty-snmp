@@ -20,7 +20,7 @@ class SnmpConnectionError(Exception):
 class SnmpV3Params(TypedDict):
     context_engine_id: str
     security_username: str
-    security_level: Literal["noAuthNoPriv", "authNoPriv", "authPriv"]
+    security_level: Literal["no_auth_or_privacy", "auth_without_privacy", "auth_with_privacy"]
     auth_protocol: Literal["md5", "sha1", "sha224", "sha256", "sha384", "sha512"]
     auth_password: str
     privacy_protocol: Literal["des", "aes128", "aes192", "aes256"]
@@ -35,7 +35,7 @@ class SnmpFactory:
         version: consts.SnmpVersion = consts.SnmpVersion.v2c,
         community: str | None = consts.SNMP_DEFAULT_COMMUNITY,
         v3_params: SnmpV3Params | None = None,
-        model: str | None = None,
+        snmp_max_repetitions: int = consts.SNMP_MAX_repetitions,
     ) -> None:
         """
         :param ip: network device ip, ipv4 or ipv6 address
@@ -43,16 +43,16 @@ class SnmpFactory:
         :param version: SNMP version, default: v2c
         :param community: SNMP v2 community, default: public
         :param v3_params: SNMP v3 params
-        :param model: network device model
+        :param snmp_max_repetitions: SNMP max repetitions for bulkwalk
         """
         self.ip = ip
         self.port = port
         self.version = version
         self.community = community
         self.v3_params = v3_params
-        self.model = model
         self.session = self._session()
         self.exceptions: list[DiscoveryException] = []
+        self.snmp_max_repetitions = snmp_max_repetitions
 
     def _session(self) -> Session:
         """create session for snmp query"""
@@ -61,7 +61,7 @@ class SnmpFactory:
                 hostname=self.ip,
                 remote_port=self.port,
                 community=self.community,
-                version=consts.SnmpVersion.v2c,
+                version=consts.SnmpVersion.v2c.value,
                 use_long_names=False,
                 use_enums=False,
                 use_sprint_value=True,
@@ -70,7 +70,7 @@ class SnmpFactory:
             return Session(
                 hostname=self.ip,
                 remote_port=self.port,
-                version=consts.SnmpVersion.v3,
+                version=consts.SnmpVersion.v3.value,
                 **self.v3_params,
                 use_long_names=False,
                 use_enums=False,
@@ -79,7 +79,7 @@ class SnmpFactory:
         raise SnmpVersionError(f"Unsupported SNMP version: {self.version}")
 
     @property
-    def hostname(self) -> str:
+    def hostname(self) -> str | None:
         """
         collect network device hostname
         """
@@ -87,22 +87,22 @@ class SnmpFactory:
             return self.session.get(consts.sysName.oid).value
         except EzSNMPError as e:
             self.exceptions.append(DiscoveryException(item="hostname", exception=str(e)))
-            return ""
+            return None
 
     @property
-    def sys_descr(self) -> str:
+    def sys_descr(self) -> str | None:
         """
         collect network device system description, include model/version/patch information
-        without structured dataformat
+        without structured data format
         """
         try:
             return self.session.get(consts.sysDescr.oid).value
         except EzSNMPError as e:
             self.exceptions.append(DiscoveryException(item="sys_descr", exception=str(e)))
-            return ""
+            return None
 
     @property
-    def uptime(self) -> str:
+    def uptime(self) -> str | None:
         """
         collect network device uptime`
         """
@@ -110,10 +110,10 @@ class SnmpFactory:
             return self.session.get(consts.sysUpTime.oid).value
         except EzSNMPError as e:
             self.exceptions.append(DiscoveryException(item="uptime", exception=str(e)))
-            return ""
+            return None
 
     @property
-    def chassis_id(self) -> Any:
+    def chassis_id(self) -> str | None:
         """
         collect chassis id via `LLDP-MIB`.
         Special configuration for Huawei: snmp should include iso view and mib-2
@@ -122,7 +122,7 @@ class SnmpFactory:
             return mac_address_validator(self.session.get(consts.lldpLocChassisId.oid).value)
         except EzSNMPError as e:
             self.exceptions.append(DiscoveryException(item="chassis_id", exception=str(e)))
-            return ""
+            return None
 
     @property
     def if_port_mode(self) -> dict[str, str]:
@@ -137,18 +137,20 @@ class SnmpFactory:
         collect interfaces via `IF-MIB`, if filtering by the items, implement it the manufacturer factory
         """
         try:
-            if_index = self.session.bulkwalk(consts.ifIndex.oid)
-            if_name = self.session.bulkwalk(consts.ifDescr.oid)
-            if_descr = self.session.bulkwalk(consts.ifAlias.oid)
-            if_mtu = self.session.bulkwalk(consts.ifMtu.oid)
-            if_speed = self.session.bulkwalk(consts.ifSpeed.oid)
-            if_high_speed = self.session.bulkwalk(consts.ifHighSpeed.oid)
-            if_type = self.session.bulkwalk(consts.ifType.oid)
-            if_phys_addr = self.session.bulkwalk(consts.ifPhysAddr.oid)
-            if_admin = self.session.bulkwalk(consts.ifAdminStatus.oid)
-            if_oper = self.session.bulkwalk(consts.ifOperStatus.oid)
-            if_addr_index = self.session.bulkwalk(consts.ifAdEntIfIndex.oid)
-            if_addr_netmask = self.session.bulkwalk(consts.ifAdEntNetMask.oid)
+            if_index = self.session.bulkwalk(consts.ifIndex.oid, max_repetitions=self.snmp_max_repetitions)
+            if_name = self.session.bulkwalk(consts.ifDescr.oid, max_repetitions=self.snmp_max_repetitions)
+            if_descr = self.session.bulkwalk(consts.ifAlias.oid, max_repetitions=self.snmp_max_repetitions)
+            if_mtu = self.session.bulkwalk(consts.ifMtu.oid, max_repetitions=self.snmp_max_repetitions)
+            if_speed = self.session.bulkwalk(consts.ifSpeed.oid, max_repetitions=self.snmp_max_repetitions)
+            if_high_speed = self.session.bulkwalk(consts.ifHighSpeed.oid, max_repetitions=self.snmp_max_repetitions)
+            if_type = self.session.bulkwalk(consts.ifType.oid, max_repetitions=self.snmp_max_repetitions)
+            if_phys_addr = self.session.bulkwalk(consts.ifPhysAddr.oid, max_repetitions=self.snmp_max_repetitions)
+            if_admin = self.session.bulkwalk(consts.ifAdminStatus.oid, max_repetitions=self.snmp_max_repetitions)
+            if_oper = self.session.bulkwalk(consts.ifOperStatus.oid, max_repetitions=self.snmp_max_repetitions)
+            if_addr_index = self.session.bulkwalk(consts.ifAdEntIfIndex.oid, max_repetitions=self.snmp_max_repetitions)
+            if_addr_netmask = self.session.bulkwalk(
+                consts.ifAdEntNetMask.oid, max_repetitions=self.snmp_max_repetitions
+            )
             if_port_mode = self.if_port_mode
         except EzSNMPError as e:
             self.exceptions.append(DiscoveryException(item="interfaces", exception=str(e)))
@@ -184,6 +186,7 @@ class SnmpFactory:
                 if_port_mode=if_port_mode.get(x, consts.UNKNOWN_PORT_MODE),
             )
             for x in index_if_index
+            if x is not None
         ]
 
     @property
@@ -191,16 +194,24 @@ class SnmpFactory:
         """
         collect lldp neighbors via `LLDP-MIB`
         Special configuration for network devices: include iso mib-2 view in snmp configuration
-        lldpRemChassisID: snmp_index value the last of 2 is localportID's index(last of 1)
+        lldpRemChassisID: snmp_index value the last of 2 is local portID's index(last of 1)
         """
         try:
             local_chassis_id = self.chassis_id
-            local_if_name = self.session.bulkwalk(consts.lldpLoPortId.oid)
-            local_if_descr = self.session.bulkwalk(consts.lldpLocPortDesc.oid)
-            remote_chassis_id = self.session.bulkwalk(consts.lldpRemChassisId.oid)
-            remote_hostname = self.session.bulkwalk(consts.lldpRemSysName.oid)
-            remote_if_name = self.session.bulkwalk(consts.lldpRemPortId.oid)
-            remote_if_descr = self.session.bulkwalk(consts.lldpRemPortDesc.oid)
+            local_if_name = self.session.bulkwalk(consts.lldpLoPortId.oid, max_repetitions=self.snmp_max_repetitions)
+            local_if_descr = self.session.bulkwalk(
+                consts.lldpLocPortDesc.oid, max_repetitions=self.snmp_max_repetitions
+            )
+            remote_chassis_id = self.session.bulkwalk(
+                consts.lldpRemChassisId.oid, max_repetitions=self.snmp_max_repetitions
+            )
+            remote_hostname = self.session.bulkwalk(
+                consts.lldpRemSysName.oid, max_repetitions=self.snmp_max_repetitions
+            )
+            remote_if_name = self.session.bulkwalk(consts.lldpRemPortId.oid, max_repetitions=self.snmp_max_repetitions)
+            remote_if_descr = self.session.bulkwalk(
+                consts.lldpRemPortDesc.oid, max_repetitions=self.snmp_max_repetitions
+            )
         except EzSNMPError as e:
             self.exceptions.append(DiscoveryException(item="lldp_neighbors", exception=str(e)))
             return []
@@ -222,6 +233,7 @@ class SnmpFactory:
                 remote_if_descr=index_remote_if_descr[x],
             )
             for x in index_remote_chassis_id
+            if x is not None
         ]
 
     @property
@@ -259,6 +271,7 @@ class SnmpFactory:
                 ent_physical_serial_num=index_ent_phy_serial[x],
             )
             for x in index_ent_phy_class
+            if x is not None
         ]
 
     @property

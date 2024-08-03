@@ -24,10 +24,18 @@ class HuaweiSnmpFactory(SnmpFactory):
         if stack_running != "1":
             return []
         try:
-            hw_stack_id = self.session.bulkwalk(consts.hwMemberCurrentStackId.oid)
-            hw_stack_priority = self.session.bulkwalk(consts.hwMemberStackPriority.oid)
-            hw_stack_role = self.session.bulkwalk(consts.hwMemberStackRole.oid)
-            hw_stack_mac_address = self.session.bulkwalk(consts.hwMemberStackMacAddress.oid)
+            hw_stack_id = self.session.bulkwalk(
+                consts.hwMemberCurrentStackId.oid, max_repetitions=self.snmp_max_repetitions
+            )
+            hw_stack_priority = self.session.bulkwalk(
+                consts.hwMemberStackPriority.oid, max_repetitions=self.snmp_max_repetitions
+            )
+            hw_stack_role = self.session.bulkwalk(
+                consts.hwMemberStackRole.oid, max_repetitions=self.snmp_max_repetitions
+            )
+            hw_stack_mac_address = self.session.bulkwalk(
+                consts.hwMemberStackMacAddress.oid, max_repetitions=self.snmp_max_repetitions
+            )
 
         except EzSNMPError as e:
             self.exceptions.append(DiscoveryException(item="stack", exception=str(e)))
