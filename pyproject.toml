@@ -20,7 +20,6 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: System :: Networking",
     "Topic :: System :: Networking :: Monitoring",
-    "Topic :: System :: Networking :: Network Administration",
     "Operating System :: POSIX :: Linux",
     "Typing :: Typed",
 ]
