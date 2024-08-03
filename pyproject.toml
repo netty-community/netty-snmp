@@ -1,10 +1,30 @@
 [project]
 name = "netty-snmp"
 version = "0.1.0"
-description = "Add your description here"
+description = "Network Device information Discovery via SNMP"
 authors = [
-    { name = "jeffry", email = "182467653@qq.com" }
+    { name = "jeffry", email = "wangxin.jeffry@gmail.com" }
 ]
+keywords = ["snmp", "netmiko", "lldp", "network-discovery", "network-device", "network-automation", "textfsm"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "Intended Audience :: Telecommunications Industry",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python",
+    "License :: OSI Approved :: BSD License",
+    "Topic :: Software Development",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Networking",
+    "Topic :: System :: Networking :: Monitoring",
+    "Topic :: System :: Networking :: Network Administration",
+    "Operating System :: POSIX :: Linux",
+    "Typing :: Typed",
+]
+
 dependencies = [
     "tcppinglib>=2.0.3",
     "ezsnmp>=1.0.0rc3",
