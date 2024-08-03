@@ -24,14 +24,14 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y snmpd libsnmp-dev libperl-dev snmp-mibs-downloader valgrind
           sudo systemctl stop snmpd
-          sudo mv /etc/snmp/snmpd.conf /etc/snmp/snmpd.conf.orig;
-          sudo cp tests/snmpd.conf /etc/snmp/snmpd.conf;
+          sudo mv /etc/snmp/snmpd.conf /etc/snmp/snmpd.conf.orig
+          sudo cp tests/snmpd.conf /etc/snmp/snmpd.conf
           sudo download-mibs
           mkdir -p -m 0755 ~/.snmp
           echo 'mibs +ALL' > ~/.snmp/snmp.conf
           sudo systemctl restart snmpd
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r requirements.lock
       - name: Test with pytest
         run: |
           pytest
