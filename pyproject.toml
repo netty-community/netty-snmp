@@ -1,6 +1,6 @@
 [project]
 name = "netty-snmp"
-version = "0.1.0"
+version = "0.1.2"
 description = "Network Device information Discovery via SNMP"
 authors = [
     { name = "jeffry", email = "wangxin.jeffry@gmail.com" }
@@ -13,7 +13,6 @@ classifiers = [
     "Intended Audience :: Telecommunications Industry",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python",
     "License :: OSI Approved :: BSD License",
     "Topic :: Software Development",
     "Topic :: Software Development :: Libraries",

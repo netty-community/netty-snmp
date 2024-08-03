@@ -1,9 +1,9 @@
 # Netty SNMP
 
-[![PyPi version](https://img.shields.io/pypi/v/netty_snmp.svg)](https://pypi.python.org/pypi/netty_snmp/)
-![Python Versions](https://img.shields.io/pypi/pyversions/netty_snmp)
+[![PyPi version](https://img.shields.io/pypi/v/netty_snmp.svg)](https://pypi.python.org/pypi/netty-snmp/)
+![Python Versions](https://img.shields.io/pypi/pyversions/netty-snmp)
 [![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
-![Test](https://img.shields.io/github/actions/workflow/status/gufolabs/gufo_snmp/tests.yml?branch=master)
+![Test](https://img.shields.io/github/actions/workflow/status/netty-community/netty-snmp/test-suite.yaml)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v0.json)](https://github.com/charliermarsh/ruff)
 
 # Network Device information Discovery via SNMP
@@ -24,7 +24,10 @@ So, personally use snmp to collect basic information of network device is a bett
 
 
 ## Installation Guide
-> pip3 install netty_snmp
+support python version: >= py3.11
+```
+pip3 install netty-snmp
+```
 
 ## Examples
 1. scanning a prefix via SNMPv2 and discovery all network device items
