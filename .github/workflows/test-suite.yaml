@@ -1,0 +1,42 @@
+name: Tests
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  tests:
+    name: "Python ${{matrix.python-version}}"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{matrix.python-version}}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{matrix.python-version}}
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y snmpd libsnmp-dev libperl-dev snmp-mibs-downloader valgrind
+          sudo systemctl stop snmpd
+          sudo mv /etc/snmp/snmpd.conf /etc/snmp/snmpd.conf.orig;
+          sudo cp tests/snmpd.conf /etc/snmp/snmpd.conf;
+          sudo download-mibs
+          mkdir -p -m 0755 ~/.snmp
+          echo 'mibs +ALL' > ~/.snmp/snmp.conf
+          sudo systemctl restart snmpd
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Test with pytest
+        run: |
+          pytest
+      - name: "Upload coverage to Codecov"
+        uses: codecov/codecov-action@v3
+        with:
+          files: coverage.xml
+          fail_ci_if_error: true
