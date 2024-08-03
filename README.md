@@ -1,3 +1,9 @@
+|Ruff |Tests|
+.. |Ruff| image:: https://github.com/netty-community/netty_snmp/blob/main/.github/workflows/ruff-action.yaml/badge.svg
+    :target: https://github.com/netty-community/netty_snmp/blob/main/.github/workflows/ruff-action.yaml
+.. |Tests| image:: https://github.com/netty-community/netty_snmp/blob/main/.github/workflows/test-suite.yaml/badge.svg
+    :target: https://github.com/netty-community/netty_snmp/blob/main/.github/workflows/test-suite.yaml
+
 # Network Device information Discovery via SNMP
 
 Netty_snmp is a flexible,powerful,high performance tool for network device information collection.
