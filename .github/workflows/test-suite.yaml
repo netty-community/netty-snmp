@@ -31,7 +31,7 @@ jobs:
           echo 'mibs +ALL' > ~/.snmp/snmp.conf
           sudo systemctl restart snmpd
           python -m pip install --upgrade pip
-          pip install -r requirements.lock
+          pip install -r requirements-dev.lock
       - name: Test with pytest
         run: |
           pytest
