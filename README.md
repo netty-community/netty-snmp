@@ -24,7 +24,7 @@ So, personally use snmp to collect basic information of network device is a bett
 
 
 ## Installation Guide
-> soon coming
+> pip3 install netty_snmp
 
 ## Examples
 1. scanning a prefix via SNMPv2 and discovery all network device items
