@@ -1,8 +1,10 @@
-|Ruff |Tests|
-.. |Ruff| image:: https://github.com/netty-community/netty_snmp/blob/main/.github/workflows/ruff-action.yaml/badge.svg
-    :target: https://github.com/netty-community/netty_snmp/blob/main/.github/workflows/ruff-action.yaml
-.. |Tests| image:: https://github.com/netty-community/netty_snmp/blob/main/.github/workflows/test-suite.yaml/badge.svg
-    :target: https://github.com/netty-community/netty_snmp/blob/main/.github/workflows/test-suite.yaml
+# Netty SNMP
+
+[![PyPi version](https://img.shields.io/pypi/v/netty_snmp.svg)](https://pypi.python.org/pypi/netty_snmp/)
+![Python Versions](https://img.shields.io/pypi/pyversions/netty_snmp)
+[![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
+![Test](https://img.shields.io/github/actions/workflow/status/gufolabs/gufo_snmp/tests.yml?branch=master)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v0.json)](https://github.com/charliermarsh/ruff)
 
 # Network Device information Discovery via SNMP
 
