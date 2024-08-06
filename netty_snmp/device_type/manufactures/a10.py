@@ -1,0 +1,42 @@
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from netty_snmp._types import DeviceType
+
+A10_DEVICE_TYPES: dict[str, "DeviceType"] = {
+    "1.3.6.1.4.1.22610.1.3.1": {"manufacturer": "A10 Networks", "platform": "a10", "model": "AX2100"},
+    "1.3.6.1.4.1.22610.1.3.10": {"manufacturer": "A10 Networks", "platform": "a10", "model": "AX3000"},
+    "1.3.6.1.4.1.22610.1.3.11": {"manufacturer": "A10 Networks", "platform": "a10", "model": "HITACHIBLADESERVER"},
+    "1.3.6.1.4.1.22610.1.3.12": {"manufacturer": "A10 Networks", "platform": "a10", "model": "AX5100"},
+    "1.3.6.1.4.1.22610.1.3.13": {"manufacturer": "A10 Networks", "platform": "a10", "model": "SOFTAX"},
+    "1.3.6.1.4.1.22610.1.3.14": {"manufacturer": "A10 Networks", "platform": "a10", "model": "AX 3030 ADC"},
+    "1.3.6.1.4.1.22610.1.3.15": {"manufacturer": "A10 Networks", "platform": "a10", "model": "AX 1030"},
+    "1.3.6.1.4.1.22610.1.3.16": {"manufacturer": "A10 Networks", "platform": "a10", "model": "AX3200-12"},
+    "1.3.6.1.4.1.22610.1.3.17": {"manufacturer": "A10 Networks", "platform": "a10", "model": "AX3400"},
+    "1.3.6.1.4.1.22610.1.3.18": {"manufacturer": "A10 Networks", "platform": "a10", "model": "AX3530"},
+    "1.3.6.1.4.1.22610.1.3.19": {"manufacturer": "A10 Networks", "platform": "a10", "model": "AX5630"},
+    "1.3.6.1.4.1.22610.1.3.2": {"manufacturer": "A10 Networks", "platform": "a10", "model": "AX3100"},
+    "1.3.6.1.4.1.22610.1.3.20": {"manufacturer": "A10 Networks", "platform": "a10", "model": "TH6430"},
+    "1.3.6.1.4.1.22610.1.3.21": {"manufacturer": "A10 Networks", "platform": "a10", "model": "TH5430"},
+    "1.3.6.1.4.1.22610.1.3.22": {"manufacturer": "A10 Networks", "platform": "a10", "model": "THUNDER 3030S"},
+    "1.3.6.1.4.1.22610.1.3.23": {"manufacturer": "A10 Networks", "platform": "a10", "model": "THUNDER SERIES 1030S"},
+    "1.3.6.1.4.1.22610.1.3.24": {"manufacturer": "A10 Networks", "platform": "a10", "model": "THUNDER SERIES 930"},
+    "1.3.6.1.4.1.22610.1.3.25": {"manufacturer": "A10 Networks", "platform": "a10", "model": "TH4430"},
+    "1.3.6.1.4.1.22610.1.3.26": {"manufacturer": "A10 Networks", "platform": "a10", "model": "TH5330"},
+    "1.3.6.1.4.1.22610.1.3.27": {"manufacturer": "A10 Networks", "platform": "a10", "model": "THUNDER SERIES 4430S"},
+    "1.3.6.1.4.1.22610.1.3.28": {"manufacturer": "A10 Networks", "platform": "a10", "model": "TH5630"},
+    "1.3.6.1.4.1.22610.1.3.29": {"manufacturer": "A10 Networks", "platform": "a10", "model": "TH6630"},
+    "1.3.6.1.4.1.22610.1.3.3": {"manufacturer": "A10 Networks", "platform": "a10", "model": "AX3200"},
+    "1.3.6.1.4.1.22610.1.3.30": {"manufacturer": "A10 Networks", "platform": "a10", "model": "THUNDER SERIES 3430"},
+    "1.3.6.1.4.1.22610.1.3.32": {"manufacturer": "A10 Networks", "platform": "a10", "model": "THUNDER SERIES 4440S"},
+    "1.3.6.1.4.1.22610.1.3.34": {"manufacturer": "A10 Networks", "platform": "a10", "model": "THUNDER SERIES 1040S"},
+    "1.3.6.1.4.1.22610.1.3.35": {"manufacturer": "A10 Networks", "platform": "a10", "model": "THUNDER SERIES 3040S"},
+    "1.3.6.1.4.1.22610.1.3.4": {"manufacturer": "A10 Networks", "platform": "a10", "model": "AX2200"},
+    "1.3.6.1.4.1.22610.1.3.44": {"manufacturer": "A10 Networks", "platform": "a10", "model": "THUNDER SERIES 5430S"},
+    "1.3.6.1.4.1.22610.1.3.5": {"manufacturer": "A10 Networks", "platform": "a10", "model": "AX2000"},
+    "1.3.6.1.4.1.22610.1.3.51": {"manufacturer": "A10 Networks", "platform": "a10", "model": "THUNDER SERIES 3350S"},
+    "1.3.6.1.4.1.22610.1.3.6": {"manufacturer": "A10 Networks", "platform": "a10", "model": "AX1000"},
+    "1.3.6.1.4.1.22610.1.3.7": {"manufacturer": "A10 Networks", "platform": "a10", "model": "AX5200"},
+    "1.3.6.1.4.1.22610.1.3.8": {"manufacturer": "A10 Networks", "platform": "a10", "model": "AX2500"},
+    "1.3.6.1.4.1.22610.1.3.9": {"manufacturer": "A10 Networks", "platform": "a10", "model": "AX2600"},
+}
