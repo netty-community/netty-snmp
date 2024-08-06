@@ -1,33 +1,46 @@
 from enum import StrEnum
 
 from netty_snmp._types import DeviceType
+from netty_snmp.device_type.manufactures.a10 import A10_DEVICE_TYPES
 from netty_snmp.device_type.manufactures.arista import ARISTA_DEVICE_TYPES
 from netty_snmp.device_type.manufactures.aruba import ARUBA_DEVICE_TYPES
 from netty_snmp.device_type.manufactures.cisco import CISCO_DEVICE_TYPES
+from netty_snmp.device_type.manufactures.extreme import EXTREME_DEVICE_TYPES
 from netty_snmp.device_type.manufactures.fortinet import FORTINET_DEVICE_TYPES
 from netty_snmp.device_type.manufactures.h3c import H3C_DEVICE_TYPES
 from netty_snmp.device_type.manufactures.huawei import HUAWEI_DEVICE_TYPES
 from netty_snmp.device_type.manufactures.juniper import JUNIPER_DEVICE_TYPES
+from netty_snmp.device_type.manufactures.mikrotik import MIKROTIK_DEVICE_TYPES
+from netty_snmp.device_type.manufactures.netgear import NETGEAR_DEVICE_TYPES
 from netty_snmp.device_type.manufactures.paloalto import PALOALTO_DEVICE_TYPES
+from netty_snmp.device_type.manufactures.ruckus import RUCKUS_DEVICE_TYPES
 from netty_snmp.device_type.manufactures.ruijie import RUIJIE_DEVICE_TYPES
+from netty_snmp.device_type.manufactures.tp_link import TP_LINK_DEVICE_TYPES
+from netty_snmp.device_type.manufactures.zte import ZTE_DEVICE_TYPES
 from netty_snmp.factory.consts import UNKNOWN_MODEL, UNKNOWN_PLATFORM
 
 
 class Manufacturer(StrEnum):
-    Cisco = "Cisco"
-    Huawei = "Huawei"
-    Aruba = "Aruba"
-    Arista = "Arista"
-    RuiJie = "Ruijie"
-    H3C = "H3C"
-    PaloAlto = "Palo Alto"
-    FortiNet = "FortiNet"
-    Juniper = "Juniper"
+    """default use iana registered enterprise organization name"""
+
+    Cisco = "ciscoSystems"
+    Huawei = "HUAWEI Technology Co.,Ltd"
+    Aruba = "Aruba, a Hewlett Packard Enterprise company"
+    Arista = "Arista Networks"
+    RuiJie = "Ruijie Networks"
+    H3C = "New H3C Technologies Co., Ltd"
+    PaloAlto = "PALO ALTO NETWORKS"
+    FortiNet = "Fortinet, Inc."
+    Juniper = "Juniper Networks, Inc."
     Netgear = "Netgear"
-    TPLink = "TP-Link"
-    Ruckus = "Ruckus"
-    CheckPoint = "CheckPoint"
-    Sangfor = "Sangfor"
+    TPLink = "TP-Link Corporation Limited."
+    Ruckus = "Ruckus Wireless, Inc."
+    CheckPoint = "Check Point Software Technologies Ltd"
+    Sangfor = "Sangfor Technologies Co.,Ltd."
+    ZTE = "Zhongxing Telecom Co.,ltd. (abbr. ZTE)"
+    A10 = "A10 Networks"
+    Extreme = "Extreme Networks"
+    MikroTik = "MikroTik"
 
 
 class Platform(StrEnum):
@@ -50,6 +63,11 @@ class Platform(StrEnum):
     TPLink = "tplink_jetstream"
     Ruckus = "ruckus_fastiron"
     Sangfor = "Unknown"
+    ZTE = "zte_zxros"
+    A10 = "a10"
+    Extreme = "extreme"
+    MikroTikRouterOS = "mikrotik_routers"
+    MikroTikSwitchOS = "mikrotik_switchos"
 
 
 EnterpriseIdManufacturer: dict[str, Manufacturer] = {
@@ -67,6 +85,10 @@ EnterpriseIdManufacturer: dict[str, Manufacturer] = {
     "25053": Manufacturer.Ruckus,
     "2620": Manufacturer.CheckPoint,
     "30547": Manufacturer.Sangfor,
+    "3902": Manufacturer.ZTE,
+    "22610": Manufacturer.A10,
+    "1916": Manufacturer.Extreme,
+    "14988": Manufacturer.MikroTik,
 }
 
 
@@ -80,6 +102,13 @@ ManufacturerDeviceTypes = {
     Manufacturer.PaloAlto: PALOALTO_DEVICE_TYPES,
     Manufacturer.FortiNet: FORTINET_DEVICE_TYPES,
     Manufacturer.Juniper: JUNIPER_DEVICE_TYPES,
+    Manufacturer.A10: A10_DEVICE_TYPES,
+    Manufacturer.Ruckus: RUCKUS_DEVICE_TYPES,
+    Manufacturer.TPLink: TP_LINK_DEVICE_TYPES,
+    Manufacturer.Netgear: NETGEAR_DEVICE_TYPES,
+    Manufacturer.ZTE: ZTE_DEVICE_TYPES,
+    Manufacturer.MikroTik: MIKROTIK_DEVICE_TYPES,
+    Manufacturer.Extreme: EXTREME_DEVICE_TYPES,
 }
 
 ManufacturerDefaultPlatform = {
@@ -143,7 +172,7 @@ def get_device_type(sys_object_id: str) -> DeviceType | None:
 
 
 def strings_to_dict(strings: str, manufacturer: Manufacturer, platform: Platform) -> dict:
-    # basic sysbojectids data source:
+    # basic sysObjectIds data source:
     # 1. https://bestmonitoringtools.com/identify-devices-with-snmp-system-oid-sysobjectid-database/
     # 2.
     result = {}
