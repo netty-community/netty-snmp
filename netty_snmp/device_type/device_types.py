@@ -48,6 +48,7 @@ class Platform(StrEnum):
     CiscoIOSXE = "cisco_xe"
     CiscoIOSXR = "cisco_xr"
     CiscoNexusOS = "cisco_nxos"
+    CiscoASA = "cisco_asa"
     Huawei = "huawei"
     HuaweiVRP = "huawei_vrp"
     HuaweiVRPV8 = "huawei_vrpv8"
@@ -132,22 +133,28 @@ def _forecast_platform(device_type: DeviceType) -> Platform:
         return device_type["platform"]  # type: ignore  # noqa: PGH003
     # Optimization: add other platforms forecasting according to model name and vendor
     if device_type["manufacturer"] == Manufacturer.Cisco:
-        if device_type["model"].startswith(("C9", "C38")):
-            device_type["platform"] = Platform.CiscoIOSXE
-        elif device_type["model"].startswith("N"):
-            device_type["platform"] = Platform.CiscoNexusOS
-        elif device_type["model"].lower().startswith("isr"):
-            device_type["platform"] = Platform.CiscoIOSXR
-        else:
-            device_type["platform"] = Platform.CiscoIOS
+        return _forecast_cisco_platform(device_type)
     if device_type["manufacturer"] == Manufacturer.Huawei:
-        if device_type["model"].startswith("CE") or device_type["model"].startswith("FM"):
-            device_type["platform"] = Platform.HuaweiVRPV8
-        else:
-            device_type["platform"] = Platform.HuaweiVRP
-    device_type["platform"] = ManufacturerDefaultPlatform[device_type["manufacturer"]]  # type: ignore  # noqa: PGH003
+        return _forecast_huawei_platform(device_type)
+    return ManufacturerDefaultPlatform[device_type["manufacturer"]]  # type: ignore  # noqa: PGH003
 
-    return device_type["platform"]
+
+def _forecast_cisco_platform(device_type: DeviceType) -> Platform:
+    if device_type["model"].startswith(("C9", "C38")):
+        return Platform.CiscoIOSXE
+    if device_type["model"].startswith("N"):
+        return Platform.CiscoNexusOS
+    if device_type["model"].lower().startswith("isr"):
+        return Platform.CiscoIOSXR
+    if device_type["model"].lower().startswith("asa"):
+        return Platform.CiscoASA
+    return Platform.CiscoIOS
+
+
+def _forecast_huawei_platform(device_type: DeviceType) -> Platform:
+    if device_type["model"].startswith("CE") or device_type["model"].startswith("FM"):
+        return Platform.HuaweiVRPV8
+    return Platform.HuaweiVRP
 
 
 def _get_manufacturer_platform(device_type: DeviceType) -> DeviceType:
