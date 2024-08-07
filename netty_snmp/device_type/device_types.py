@@ -21,25 +21,25 @@ from netty_snmp.factory.consts import UNKNOWN_MODEL, UNKNOWN_PLATFORM
 
 
 class Manufacturer(StrEnum):
-    """default use iana registered enterprise organization name"""
+    """default use iana registered enterprise organization name, without suffix and to camel case"""
 
-    Cisco = "ciscoSystems"
-    Huawei = "HUAWEI Technology Co.,Ltd"
-    Aruba = "Aruba, a Hewlett Packard Enterprise company"
-    Arista = "Arista Networks"
-    RuiJie = "Ruijie Networks"
-    H3C = "New H3C Technologies Co., Ltd"
-    PaloAlto = "PALO ALTO NETWORKS"
-    FortiNet = "Fortinet, Inc."
-    Juniper = "Juniper Networks, Inc."
+    Cisco = "Cisco"
+    Huawei = "Huawei"
+    Aruba = "Aruba"
+    Arista = "Arista"
+    RuiJie = "Ruijie"
+    H3C = "H3C"
+    PaloAlto = "PALO ALTO"
+    FortiNet = "Fortinet."
+    Juniper = "Juniper."
     Netgear = "Netgear"
-    TPLink = "TP-Link Corporation Limited."
-    Ruckus = "Ruckus Wireless, Inc."
-    CheckPoint = "Check Point Software Technologies Ltd"
-    Sangfor = "Sangfor Technologies Co.,Ltd."
-    ZTE = "Zhongxing Telecom Co.,ltd. (abbr. ZTE)"
-    A10 = "A10 Networks"
-    Extreme = "Extreme Networks"
+    TPLink = "TP-Link"
+    Ruckus = "Ruckus"
+    CheckPoint = "Check Point"
+    Sangfor = "Sangfor"
+    ZTE = "ZTE"
+    A10 = "A10"
+    Extreme = "Extreme"
     MikroTik = "MikroTik"
 
 
@@ -48,6 +48,7 @@ class Platform(StrEnum):
     CiscoIOSXE = "cisco_xe"
     CiscoIOSXR = "cisco_xr"
     CiscoNexusOS = "cisco_nxos"
+    CiscoASA = "cisco_asa"
     Huawei = "huawei"
     HuaweiVRP = "huawei_vrp"
     HuaweiVRPV8 = "huawei_vrpv8"
@@ -132,22 +133,28 @@ def _forecast_platform(device_type: DeviceType) -> Platform:
         return device_type["platform"]  # type: ignore  # noqa: PGH003
     # Optimization: add other platforms forecasting according to model name and vendor
     if device_type["manufacturer"] == Manufacturer.Cisco:
-        if device_type["model"].startswith(("C9", "C38")):
-            device_type["platform"] = Platform.CiscoIOSXE
-        elif device_type["model"].startswith("N"):
-            device_type["platform"] = Platform.CiscoNexusOS
-        elif device_type["model"].lower().startswith("isr"):
-            device_type["platform"] = Platform.CiscoIOSXR
-        else:
-            device_type["platform"] = Platform.CiscoIOS
+        return _forecast_cisco_platform(device_type)
     if device_type["manufacturer"] == Manufacturer.Huawei:
-        if device_type["model"].startswith("CE") or device_type["model"].startswith("FM"):
-            device_type["platform"] = Platform.HuaweiVRPV8
-        else:
-            device_type["platform"] = Platform.HuaweiVRP
-    device_type["platform"] = ManufacturerDefaultPlatform[device_type["manufacturer"]]  # type: ignore  # noqa: PGH003
+        return _forecast_huawei_platform(device_type)
+    return ManufacturerDefaultPlatform[device_type["manufacturer"]]  # type: ignore  # noqa: PGH003
 
-    return device_type["platform"]
+
+def _forecast_cisco_platform(device_type: DeviceType) -> Platform:
+    if device_type["model"].startswith(("C9", "C38")):
+        return Platform.CiscoIOSXE
+    if device_type["model"].startswith("N"):
+        return Platform.CiscoNexusOS
+    if device_type["model"].lower().startswith("isr"):
+        return Platform.CiscoIOSXR
+    if device_type["model"].lower().startswith("asa"):
+        return Platform.CiscoASA
+    return Platform.CiscoIOS
+
+
+def _forecast_huawei_platform(device_type: DeviceType) -> Platform:
+    if device_type["model"].startswith("CE") or device_type["model"].startswith("FM"):
+        return Platform.HuaweiVRPV8
+    return Platform.HuaweiVRP
 
 
 def _get_manufacturer_platform(device_type: DeviceType) -> DeviceType:
