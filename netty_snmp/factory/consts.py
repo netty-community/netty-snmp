@@ -557,3 +557,29 @@ sysExtSwitchSetNo = SnmpItem(
     value_type="str",
     value_mapping=None,
 )
+
+
+dot1dTpFdbAddress = SnmpItem(
+    name="dot1dTpFdbAddress",
+    oid=".1.3.6.1.2.1.17.4.3.1.1",
+    description="The MAC address of the FDB entry.",
+    value_type="str",
+    value_mapping=None,
+    to_hex=True,
+)
+
+dot1dTpFdbPort = SnmpItem(
+    name="dot1dTpFdbPort",
+    oid=".1.3.6.1.2.1.17.4.3.1.2",
+    description="The port number of the FDB entry.",
+    value_type="int",
+    value_mapping=None,
+)
+
+dot1dBasePortIfIndex = SnmpItem(
+    name="dot1dBasePortIfIndex",
+    oid=".1.3.6.1.2.1.2.2.1.1",
+    description="The ifIndex of the port.",
+    value_type="int",
+    value_mapping=None,
+)

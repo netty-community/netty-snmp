@@ -42,4 +42,6 @@ PALOALTO_DEVICE_TYPES: dict[str, "DeviceType"] = {
     ".1.3.6.1.4.1.25461.2.3.7": {"manufacturer": "Palo Alto", "platform": "paloalto_panos", "model": "PANORAMA"},
     ".1.3.6.1.4.1.25461.2.3.8": {"manufacturer": "Palo Alto", "platform": "paloalto_panos", "model": "PA-5060"},
     ".1.3.6.1.4.1.25461.2.3.9": {"manufacturer": "Palo Alto", "platform": "paloalto_panos", "model": "PA-5050"},
+    ".1.3.6.1.4.1.25461.2.3.69": {"manufacturer": "Palo Alto", "platform": "paloalto_panos", "model": "PA-1400"},
+    ".1.3.6.1.4.1.25461.2.3.70": {"manufacturer": "Palo Alto", "platform": "paloalto_panos", "model": "PA-1420"},
 }

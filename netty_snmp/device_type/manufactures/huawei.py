@@ -1074,6 +1074,15 @@ HUAWEI_DEVICE_TYPES: dict[str, "DeviceType"] = {
     ".1.3.6.1.4.1.2011.6.122.8.19.1": {"manufacturer": "Huawei", "platform": "huawei", "model": "ANTIDDOS8030"},
     ".1.3.6.1.4.1.2011.6.133.46": {"manufacturer": "Huawei", "platform": "huawei", "model": "USG6550"},
     ".1.3.6.1.4.1.2011.6.133.55": {"manufacturer": "Huawei", "platform": "huawei", "model": "USG6620"},
+    ".1.3.6.1.4.1.2011.2.23.696": {"manufacturer": "Huawei", "platform": "huawei", "model": "S5731-S48P4X"},
+    ".1.3.6.1.4.1.2011.2.23.413": {"manufacturer": "Huawei", "platform": "huawei", "model": "S5720-28P-PWR-LI-AC"},
+    ".1.3.6.1.4.1.2011.2.23.437": {"manufacturer": "Huawei", "platform": "huawei", "model": "S5720-52P-PWR-LI-AC"},
+    ".1.3.6.1.4.1.2011.2.23.577": {"manufacturer": "Huawei", "platform": "huawei", "model": "S5720-28P-PWR-LI-AC"},
+    ".1.3.6.1.4.1.2011.2.23.438": {"manufacturer": "Huawei", "platform": "huawei", "model": "S5720S-52P-PWR-LI-AC"},
+    ".1.3.6.1.4.1.2011.2.23.582": {"manufacturer": "Huawei", "platform": "huawei", "model": "S5720-52P-PWR-LI-AC"},
+    ".1.3.6.1.4.1.2011.2.23.703": {"manufacturer": "Huawei", "platform": "huawei", "model": "S6730-S24X6Q"},
+    ".1.3.6.1.4.1.2011.2.379.8": {"manufacturer": "Huawei", "platform": "huawei", "model": "FM6857-48S6CQ-EI"},
+    ".1.3.6.1.4.1.2011.2.23.798": {"manufacturer": "Huawei", "platform": "huawei", "model": "S5735S-S48P4X-A"},
 }
 
 

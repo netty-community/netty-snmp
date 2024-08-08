@@ -287,7 +287,41 @@ class SnmpFactory:
     def routes(self) -> Any: ...
 
     @property
-    def mac_address_table(self) -> Any: ...
+    def mac_address_table(self) -> dict[int, list[str]]:
+        """collect mac address table via `DOT1D-MIB`
+        if port index is `0` which indicated that the port number has not been learned, but that the
+        bridge does have some forwarding/filtering information about this mac address.
+
+        Returns:
+            dict[int, list[str]]: dict[if_index, list[mac_address]]
+        """
+        try:
+            dot1d_base_port_index = self.session.bulkwalk(
+                oids=consts.dot1dBasePortIfIndex.oid, max_repetitions=self.snmp_max_repetitions
+            )
+            dot1d_tp_fdb_address = self.session.bulkwalk(
+                oids=consts.dot1dTpFdbAddress.oid, max_repetitions=self.snmp_max_repetitions
+            )
+            dot1d_tp_fdb_port = self.session.bulkwalk(
+                oids=consts.dot1dTpFdbPort.oid, max_repetitions=self.snmp_max_repetitions
+            )
+        except EzSNMPError as e:
+            self.exceptions.append(DiscoveryException(item="mac_address_table", exception=str(e)))
+            return {}
+        index_dot1d_base_port_index = {x.oid.split(".")[-1]: x.value for x in dot1d_base_port_index}
+        index_dot1d_base_port_index["0"] = "0"
+        index_dot1d_tp_fdb_address = {}
+        for x in dot1d_tp_fdb_address:
+            index = ".".join(x.oid.split(".")[-6:])
+            mac_address = mac_address_validator(x.value, True)
+            if not mac_address:
+                continue
+            index_dot1d_tp_fdb_address[index] = mac_address
+        index_dot1d_tp_fdb_port = {".".join(x.oid.split(".")[-6:]): x.value for x in dot1d_tp_fdb_port}
+        results = defaultdict(list)
+        for port_index, mac_address in index_dot1d_tp_fdb_address.items():
+            results[int(index_dot1d_base_port_index[index_dot1d_tp_fdb_port[port_index]])].append(mac_address)
+        return results
 
     @property
     def arp_table(self) -> Any: ...
@@ -311,6 +345,7 @@ class SnmpFactory:
                 stack=self.stack,
                 vlans=self.vlans,
                 prefixes=self.prefixes,
+                mac_address_table=self.mac_address_table,
                 routes=self.routes,
                 exceptions=self.exceptions,
             )
