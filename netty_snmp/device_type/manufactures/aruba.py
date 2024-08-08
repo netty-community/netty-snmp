@@ -183,4 +183,5 @@ ARUBA_DEVICE_TYPES: dict[str, "DeviceType"] = {
     ".1.3.6.1.4.1.14823.1.2.9999": {"manufacturer": "Aruba", "platform": "aruba_os", "model": "ARUBA AP-UNDEFINED"},
     ".1.3.6.1.4.1.14823.1.3.1": {"manufacturer": "Aruba", "platform": "aruba_os", "model": "ZMASTER"},
     ".1.3.6.1.4.1.14823.1.6.1": {"manufacturer": "Aruba", "platform": "aruba_os", "model": "C2000"},
+    ".1.3.6.1.4.1.14823.1.1.59": {"manufacturer": "Aruba", "platform": "aruba_os", "model": "Aruba9240"},
 }

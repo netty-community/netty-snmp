@@ -592,4 +592,9 @@ ARISTA_DEVICE_TYPES: dict[str, "DeviceType"] = {
     ".1.3.6.1.4.1.30065.1.3011.7508": {"manufacturer": "Arista", "platform": "arista_eos", "model": "DCS-7508"},
     ".1.3.6.1.4.1.30065.1.3011.7508.1359": {"manufacturer": "Arista", "platform": "arista_eos", "model": "7508N"},
     ".1.3.6.1.4.1.30065.1.3011.7512.1359": {"manufacturer": "Arista", "platform": "arista_eos", "model": "7512N"},
+    ".1.3.6.1.4.1.30065.1.2546.720.858.24.213.4": {
+        "manufacturer": "Arista",
+        "platform": "arista_eos",
+        "model": "CCS-720XP-24ZY4",
+    },
 }
