@@ -578,7 +578,7 @@ dot1dTpFdbPort = SnmpItem(
 
 dot1dBasePortIfIndex = SnmpItem(
     name="dot1dBasePortIfIndex",
-    oid="1.3.6.1.2.1.17.1.4.1.2",
+    oid=".1.3.6.1.2.1.17.1.4.1.2",
     description="The ifIndex of the port.",
     value_type="int",
     value_mapping=None,
@@ -586,7 +586,7 @@ dot1dBasePortIfIndex = SnmpItem(
 
 ipNetToMediaPhysAddress = SnmpItem(
     name="ipNetToMediaPhysAddress",
-    oid="1.3.6.1.2.1.4.22.1.2",
+    oid=".1.3.6.1.2.1.4.22.1.2",
     description="The MAC address of the port.",
     value_type="str",
     value_mapping=None,
