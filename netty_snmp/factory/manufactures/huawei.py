@@ -14,7 +14,7 @@ class HuaweiSnmpFactory(SnmpFactory):
         version: consts.SnmpVersion = consts.SnmpVersion.v2c,
         community: str | None = consts.SNMP_DEFAULT_COMMUNITY,
         v3_params: SnmpV3Params | None = None,
-        snmp_max_repetitions: int = consts.SNMP_MAX_repetitions,
+        snmp_max_repetitions: int = consts.SNMP_MAX_REPETITIONS,
     ) -> None:
         super().__init__(ip, port, version, community, v3_params, snmp_max_repetitions)
 
@@ -25,16 +25,16 @@ class HuaweiSnmpFactory(SnmpFactory):
             return []
         try:
             hw_stack_id = self.session.bulkwalk(
-                consts.hwMemberCurrentStackId.oid, max_repetitions=self.snmp_max_repetitions
+                consts.hwMemberCurrentStackId.oid, max_repetitions=self.SNMP_MAX_REPETITIONS
             )
             hw_stack_priority = self.session.bulkwalk(
-                consts.hwMemberStackPriority.oid, max_repetitions=self.snmp_max_repetitions
+                consts.hwMemberStackPriority.oid, max_repetitions=self.SNMP_MAX_REPETITIONS
             )
             hw_stack_role = self.session.bulkwalk(
-                consts.hwMemberStackRole.oid, max_repetitions=self.snmp_max_repetitions
+                consts.hwMemberStackRole.oid, max_repetitions=self.SNMP_MAX_REPETITIONS
             )
             hw_stack_mac_address = self.session.bulkwalk(
-                consts.hwMemberStackMacAddress.oid, max_repetitions=self.snmp_max_repetitions
+                consts.hwMemberStackMacAddress.oid, max_repetitions=self.SNMP_MAX_REPETITIONS
             )
 
         except EzSNMPError as e:

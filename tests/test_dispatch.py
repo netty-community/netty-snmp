@@ -7,7 +7,7 @@ def test_dispatch():
         port=161,
         version=consts.SnmpVersion.v2c,
         community="public",
-        snmp_max_repetitions=20,
+        snmp_max_repetitions=consts.SNMP_MAX_REPETITIONS,
         max_workers=64,
     )
 

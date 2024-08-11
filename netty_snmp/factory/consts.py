@@ -4,7 +4,7 @@ from netty_snmp._types import SnmpItem
 
 SNMP_DEFAULT_PORT = 161
 SNMP_DEFAULT_COMMUNITY = "public"
-SNMP_MAX_repetitions = 50
+SNMP_MAX_REPETITIONS = 50
 UNKNOWN_MANUFACTURER = "Unknown"
 UNKNOWN_PLATFORM = "Unknown"
 UNKNOWN_MODEL = "Unknown"
@@ -578,8 +578,17 @@ dot1dTpFdbPort = SnmpItem(
 
 dot1dBasePortIfIndex = SnmpItem(
     name="dot1dBasePortIfIndex",
-    oid=".1.3.6.1.2.1.2.2.1.1",
+    oid=".1.3.6.1.2.1.17.1.4.1.2",
     description="The ifIndex of the port.",
     value_type="int",
     value_mapping=None,
+)
+
+ipNetToMediaPhysAddress = SnmpItem(
+    name="ipNetToMediaPhysAddress",
+    oid=".1.3.6.1.2.1.4.22.1.2",
+    description="The MAC address of the port.",
+    value_type="str",
+    value_mapping=None,
+    to_hex=True,
 )
