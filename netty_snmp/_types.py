@@ -104,6 +104,7 @@ class SnmpDiscoveryData(TypedDict, total=False):
     stack: list[dict]
     vlans: list[dict]
     mac_address_table: dict[int, list[str]] | None
+    arp_table: dict[str, str] | None
     prefixes: list[dict] | None
     routes: list[dict] | None
     exceptions: list[DiscoveryException]

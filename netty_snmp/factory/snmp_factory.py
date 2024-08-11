@@ -35,7 +35,7 @@ class SnmpFactory:
         version: consts.SnmpVersion = consts.SnmpVersion.v2c,
         community: str | None = consts.SNMP_DEFAULT_COMMUNITY,
         v3_params: SnmpV3Params | None = None,
-        snmp_max_repetitions: int = consts.SNMP_MAX_repetitions,
+        snmp_max_repetitions: int = consts.SNMP_MAX_REPETITIONS,
     ) -> None:
         """
         :param ip: network device ip, ipv4 or ipv6 address
@@ -324,7 +324,15 @@ class SnmpFactory:
         return results
 
     @property
-    def arp_table(self) -> Any: ...
+    def arp_table(self) -> dict[str, str]:
+        try:
+            arp_table = self.session.bulkwalk(
+                oids=consts.ipNetToMediaPhysAddress.oid, max_repetitions=self.snmp_max_repetitions
+            )
+        except EzSNMPError as e:
+            self.exceptions.append(DiscoveryException(item="arp_table", exception=str(e)))
+            return {}
+        return {".".join(x.oid_index.split(".")[-4:]): mac_address_validator(x.value, True) for x in arp_table}
 
     def discovery(self, items: list[DiscoveryItem] | None = None) -> SnmpDiscoveryData:
         """
@@ -346,6 +354,7 @@ class SnmpFactory:
                 vlans=self.vlans,
                 prefixes=self.prefixes,
                 mac_address_table=self.mac_address_table,
+                arp_table=self.arp_table,
                 routes=self.routes,
                 exceptions=self.exceptions,
             )

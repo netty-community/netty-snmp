@@ -59,7 +59,7 @@ class DispatchSnmpFactory:
         version: consts.SnmpVersion = consts.SnmpVersion.v2c,
         community: str | None = consts.SNMP_DEFAULT_COMMUNITY,
         v3_params: SnmpV3Params | None = None,
-        snmp_max_repetitions: int = 20,
+        snmp_max_repetitions: int = consts.SNMP_MAX_REPETITIONS,
         max_workers: int = 16,
     ) -> None:
         self.prefix = self.str_to_prefix(prefix)
