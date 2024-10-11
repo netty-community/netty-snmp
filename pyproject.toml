@@ -13,6 +13,7 @@ classifiers = [
     "Intended Audience :: Telecommunications Industry",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "License :: OSI Approved :: BSD License",
     "Topic :: Software Development",
     "Topic :: Software Development :: Libraries",
