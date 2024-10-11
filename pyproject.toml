@@ -1,6 +1,6 @@
 [project]
 name = "netty-snmp"
-version = "0.1.2"
+version = "0.1.3"
 description = "Network Device information Discovery via SNMP"
 authors = [
     { name = "jeffry", email = "wangxin.jeffry@gmail.com" }
