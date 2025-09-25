@@ -2,7 +2,8 @@ from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from ipaddress import ip_network
 
-from ezsnmp import EzSNMPError, Session
+from gufo.snmp import Aes128Key, DesKey, Md5Key, Sha1Key, SnmpError, SnmpVersion, User
+from gufo.snmp.sync_client import SnmpSession
 from icmplib import ping
 from tcppinglib import tcpping
 
@@ -26,7 +27,7 @@ from netty_snmp.factory.manufactures.huawei import HuaweiSnmpFactory
 from netty_snmp.factory.manufactures.juniper import JuniperSnmpFactory
 from netty_snmp.factory.manufactures.paloalto import PaloAltoSnmpFactory
 from netty_snmp.factory.manufactures.ruijie import RuijieSnmpFactory
-from netty_snmp.factory.snmp_factory import SnmpFactory, SnmpV3Params
+from netty_snmp.factory.snmp_factory import SnmpFactory, SnmpV3Params, SnmpVersionError
 
 
 def get_factory(platform: Platform) -> type[SnmpFactory]:
@@ -56,7 +57,7 @@ class DispatchSnmpFactory:
         self,
         prefix: str,
         port: int = consts.SNMP_DEFAULT_PORT,
-        version: consts.SnmpVersion = consts.SnmpVersion.v2c,
+        version: SnmpVersion = SnmpVersion.v2c,
         community: str | None = consts.SNMP_DEFAULT_COMMUNITY,
         v3_params: SnmpV3Params | None = None,
         snmp_max_repetitions: int = consts.SNMP_MAX_REPETITIONS,
@@ -82,15 +83,37 @@ class DispatchSnmpFactory:
         except ValueError as e:
             raise ValueError(f"Invalid ip prefix: {prefix}") from e
 
-    def snmp_reachable(self, session: Session) -> bool:
+    def snmp_reachable(self, session: SnmpSession) -> bool:
         try:
-            result = session.get_next(".1").value
-        except EzSNMPError:
+            result = session.getnext(".1")
+        except ConnectionError:
             result = None
         return result is not None
 
-    def sys_object_id(self, session: Session) -> str | None:
-        return session.get(consts.sysObjectID.oid).value
+    def get_auth_key(self) -> Sha1Key | Md5Key | None:
+        if not self.v3_params:
+            return None
+        auth_protocol = self.v3_params.get("auth_protocol")
+        auth_password = self.v3_params.get("auth_password")
+        if auth_protocol == "md5":
+            return Md5Key(bytes(auth_password, "utf-8"))
+        if auth_protocol == "sha1":
+            return Sha1Key(bytes(auth_password, "utf-8"))
+        return None
+
+    def get_priv_key(self) -> Aes128Key | DesKey | None:
+        if not self.v3_params:
+            return None
+        privacy_protocol = self.v3_params.get("privacy_protocol")
+        privacy_password = self.v3_params.get("privacy_password")
+        if privacy_protocol == "aes128":
+            return Aes128Key(bytes(privacy_password, "utf-8"))
+        if privacy_protocol == "des":
+            return DesKey(bytes(privacy_password, "utf-8"))
+        return None
+
+    def sys_object_id(self, session: SnmpSession) -> str | None:
+        return session.get(consts.sysObjectID.oid)
 
     def device_type(self, sys_object_id: str) -> "DeviceType":
         device_type = get_device_type(sys_object_id)
@@ -102,16 +125,26 @@ class DispatchSnmpFactory:
             )
         return device_type
 
-    def get_snmp_session(self, ip: str) -> Session:
+    def get_snmp_session(self, ip: str) -> SnmpSession:
         if self.version == consts.SnmpVersion.v2c and self.community:
-            session = Session(
-                hostname=ip, remote_port=self.port, community=self.community, version=consts.SnmpVersion.v2c.value
+            return SnmpSession(
+                addr=ip,
+                port=self.port,
+                community=self.community,
+                version=SnmpVersion.v2c,
             )
-        elif self.version == consts.SnmpVersion.v3 and self.v3_params:
-            session = Session(hostname=ip, remote_port=self.port, version=consts.SnmpVersion.v3.value, **self.v3_params)
-        else:
-            raise ValueError("Unsupported SNMP version")
-        return session
+        if self.version == SnmpVersion.v3 and self.v3_params:
+            return SnmpSession(
+                addr=ip,
+                port=self.port,
+                version=SnmpVersion.v3,
+                user=User(
+                    name=self.v3_params["security_username"],
+                    auth_key=self.get_auth_key(),
+                    priv_key=self.get_priv_key(),
+                ),
+            )
+        raise SnmpVersionError(f"Unsupported SNMP version: {self.version}")
 
     def _dispatch(self, ip_address: str, discovery_items: list[DiscoveryItem] | None = None) -> DiscoveryResponse:
         snmp_session = self.get_snmp_session(ip_address)
@@ -134,7 +167,7 @@ class DispatchSnmpFactory:
 
         try:
             sys_object_id = self.sys_object_id(snmp_session)
-        except EzSNMPError as e:
+        except SnmpError as e:
             self._handle_snmp_error(ip_address, "sys_object_id", e)
             return discovery_response
 
@@ -172,7 +205,7 @@ class DispatchSnmpFactory:
     def _is_ssh_reachable(ip_address: str) -> bool:
         return tcpping(ip_address, port=22, timeout=1, count=2, interval=0.2).is_alive
 
-    def _handle_snmp_error(self, ip_address: str, item: DispatchItem, exception: EzSNMPError) -> None:
+    def _handle_snmp_error(self, ip_address: str, item: DispatchItem, exception: SnmpError) -> None:
         self.exceptions.setdefault(ip_address, []).append(DiscoveryException(item=item, exception=str(exception)))
         self.exceptions[ip_address].append(DiscoveryException(item=item, exception=str(exception)))
 

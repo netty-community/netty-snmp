@@ -2,7 +2,8 @@ from collections import defaultdict
 from ipaddress import ip_interface
 from typing import Any, Literal, TypedDict
 
-from ezsnmp import EzSNMPError, Session
+from gufo.snmp import Aes128Key, DesKey, Md5Key, Sha1Key, SnmpError, SnmpVersion, User
+from gufo.snmp.sync_client import SnmpSession
 
 from netty_snmp._types import DiscoveryException, DiscoveryItem, Entity, Interface, LldpNeighbor, SnmpDiscoveryData
 from netty_snmp.factory import consts
@@ -21,9 +22,9 @@ class SnmpV3Params(TypedDict):
     context_engine_id: str
     security_username: str
     security_level: Literal["no_auth_or_privacy", "auth_without_privacy", "auth_with_privacy"]
-    auth_protocol: Literal["md5", "sha1", "sha224", "sha256", "sha384", "sha512"]
+    auth_protocol: Literal["md5", "sha1"]
     auth_password: str
-    privacy_protocol: Literal["des", "aes128", "aes192", "aes256"]
+    privacy_protocol: Literal["des", "aes128"]
     privacy_password: str
 
 
@@ -32,7 +33,7 @@ class SnmpFactory:
         self,
         ip: str,
         port: int = consts.SNMP_DEFAULT_PORT,
-        version: consts.SnmpVersion = consts.SnmpVersion.v2c,
+        version: SnmpVersion = SnmpVersion.v2c,
         community: str | None = consts.SNMP_DEFAULT_COMMUNITY,
         v3_params: SnmpV3Params | None = None,
         snmp_max_repetitions: int = consts.SNMP_MAX_REPETITIONS,
@@ -43,7 +44,7 @@ class SnmpFactory:
         :param version: SNMP version, default: v2c
         :param community: SNMP v2 community, default: public
         :param v3_params: SNMP v3 params
-        :param snmp_max_repetitions: SNMP max repetitions for bulkwalk
+        :param snmp_max_repetitions: SNMP max repetitions for getbulk
         """
         self.ip = ip
         self.port = port
@@ -54,27 +55,47 @@ class SnmpFactory:
         self.exceptions: list[DiscoveryException] = []
         self.snmp_max_repetitions = snmp_max_repetitions
 
-    def _session(self) -> Session:
+    def get_auth_key(self) -> Sha1Key | Md5Key | None:
+        if not self.v3_params:
+            return None
+        auth_protocol = self.v3_params.get("auth_protocol")
+        auth_password = self.v3_params.get("auth_password")
+        if auth_protocol == "md5":
+            return Md5Key(bytes(auth_password, "utf-8"))
+        if auth_protocol == "sha1":
+            return Sha1Key(bytes(auth_password, "utf-8"))
+        return None
+
+    def get_priv_key(self) -> Aes128Key | DesKey | None:
+        if not self.v3_params:
+            return None
+        privacy_protocol = self.v3_params.get("privacy_protocol")
+        privacy_password = self.v3_params.get("privacy_password")
+        if privacy_protocol == "aes128":
+            return Aes128Key(bytes(privacy_password, "utf-8"))
+        if privacy_protocol == "des":
+            return DesKey(bytes(privacy_password, "utf-8"))
+        return None
+
+    def _session(self) -> SnmpSession:
         """create session for snmp query"""
         if self.version == consts.SnmpVersion.v2c and self.community:
-            return Session(
-                hostname=self.ip,
-                remote_port=self.port,
+            return SnmpSession(
+                addr=self.ip,
+                port=self.port,
                 community=self.community,
-                version=consts.SnmpVersion.v2c.value,
-                use_long_names=False,
-                use_enums=False,
-                use_sprint_value=True,
+                version=SnmpVersion.v2c,
             )
-        if self.version == consts.SnmpVersion.v3 and self.v3_params:
-            return Session(
-                hostname=self.ip,
-                remote_port=self.port,
-                version=consts.SnmpVersion.v3.value,
-                **self.v3_params,
-                use_long_names=False,
-                use_enums=False,
-                use_sprint_value=True,
+        if self.version == SnmpVersion.v3 and self.v3_params:
+            return SnmpSession(
+                addr=self.ip,
+                port=self.port,
+                version=SnmpVersion.v3,
+                user=User(
+                    name=self.v3_params["security_username"],
+                    auth_key=self.get_auth_key(),
+                    priv_key=self.get_priv_key(),
+                ),
             )
         raise SnmpVersionError(f"Unsupported SNMP version: {self.version}")
 
@@ -84,8 +105,8 @@ class SnmpFactory:
         collect network device hostname
         """
         try:
-            return self.session.get(consts.sysName.oid).value
-        except EzSNMPError as e:
+            return self.session.get(consts.sysName.oid)  # type: ignore  # noqa: PGH003
+        except SnmpError as e:
             self.exceptions.append(DiscoveryException(item="hostname", exception=str(e)))
             return None
 
@@ -96,8 +117,8 @@ class SnmpFactory:
         without structured data format
         """
         try:
-            return self.session.get(consts.sysDescr.oid).value
-        except EzSNMPError as e:
+            return self.session.get(consts.sysDescr.oid)
+        except SnmpError as e:
             self.exceptions.append(DiscoveryException(item="sys_descr", exception=str(e)))
             return None
 
@@ -107,8 +128,8 @@ class SnmpFactory:
         collect network device uptime`
         """
         try:
-            return self.session.get(consts.sysUpTime.oid).value
-        except EzSNMPError as e:
+            return self.session.get(consts.sysUpTime.oid)
+        except SnmpError as e:
             self.exceptions.append(DiscoveryException(item="uptime", exception=str(e)))
             return None
 
@@ -119,8 +140,8 @@ class SnmpFactory:
         Special configuration for Huawei: snmp should include iso view and mib-2
         """
         try:
-            return mac_address_validator(self.session.get(consts.lldpLocChassisId.oid).value)
-        except EzSNMPError as e:
+            return mac_address_validator(self.session.get(consts.lldpLocChassisId.oid))
+        except SnmpError as e:
             self.exceptions.append(DiscoveryException(item="chassis_id", exception=str(e)))
             return None
 
@@ -137,43 +158,41 @@ class SnmpFactory:
         collect interfaces via `IF-MIB`, if filtering by the items, implement it the manufacturer factory
         """
         try:
-            if_index = self.session.bulkwalk(consts.ifIndex.oid, max_repetitions=self.snmp_max_repetitions)
-            if_name = self.session.bulkwalk(consts.ifDescr.oid, max_repetitions=self.snmp_max_repetitions)
-            if_descr = self.session.bulkwalk(consts.ifAlias.oid, max_repetitions=self.snmp_max_repetitions)
-            if_mtu = self.session.bulkwalk(consts.ifMtu.oid, max_repetitions=self.snmp_max_repetitions)
-            if_speed = self.session.bulkwalk(consts.ifSpeed.oid, max_repetitions=self.snmp_max_repetitions)
-            if_high_speed = self.session.bulkwalk(consts.ifHighSpeed.oid, max_repetitions=self.snmp_max_repetitions)
-            if_type = self.session.bulkwalk(consts.ifType.oid, max_repetitions=self.snmp_max_repetitions)
-            if_phys_addr = self.session.bulkwalk(consts.ifPhysAddr.oid, max_repetitions=self.snmp_max_repetitions)
-            if_admin = self.session.bulkwalk(consts.ifAdminStatus.oid, max_repetitions=self.snmp_max_repetitions)
-            if_oper = self.session.bulkwalk(consts.ifOperStatus.oid, max_repetitions=self.snmp_max_repetitions)
-            if_addr_index = self.session.bulkwalk(consts.ifAdEntIfIndex.oid, max_repetitions=self.snmp_max_repetitions)
-            if_addr_netmask = self.session.bulkwalk(
-                consts.ifAdEntNetMask.oid, max_repetitions=self.snmp_max_repetitions
-            )
+            if_index = self.session.getbulk(consts.ifIndex[0], max_repetitions=self.snmp_max_repetitions)
+            if_name = self.session.getbulk(consts.ifDescr.oid, max_repetitions=self.snmp_max_repetitions)
+            if_descr = self.session.getbulk(consts.ifAlias.oid, max_repetitions=self.snmp_max_repetitions)
+            if_mtu = self.session.getbulk(consts.ifMtu.oid, max_repetitions=self.snmp_max_repetitions)
+            if_speed = self.session.getbulk(consts.ifSpeed.oid, max_repetitions=self.snmp_max_repetitions)
+            if_high_speed = self.session.getbulk(consts.ifHighSpeed.oid, max_repetitions=self.snmp_max_repetitions)
+            if_type = self.session.getbulk(consts.ifType.oid, max_repetitions=self.snmp_max_repetitions)
+            if_phys_addr = self.session.getbulk(consts.ifPhysAddr.oid, max_repetitions=self.snmp_max_repetitions)
+            if_admin = self.session.getbulk(consts.ifAdminStatus.oid, max_repetitions=self.snmp_max_repetitions)
+            if_oper = self.session.getbulk(consts.ifOperStatus.oid, max_repetitions=self.snmp_max_repetitions)
+            if_addr_index = self.session.getbulk(consts.ifAdEntIfIndex[0], max_repetitions=self.snmp_max_repetitions)
+            if_addr_netmask = self.session.getbulk(consts.ifAdEntNetMask.oid, max_repetitions=self.snmp_max_repetitions)
             if_port_mode = self.if_port_mode
-        except EzSNMPError as e:
+        except SnmpError as e:
             self.exceptions.append(DiscoveryException(item="interfaces", exception=str(e)))
             return []
-        index_if_index = {x.oid_index: x.value for x in if_index}
-        index_if_name = {x.oid_index: x.value for x in if_name}
-        index_if_descr = {x.oid_index: x.value for x in if_descr}
-        index_if_mtu = {x.oid_index: x.value for x in if_mtu}
-        index_if_speed = {x.oid_index: x.value for x in if_speed}
-        index_if_high_speed = {x.oid_index: x.value for x in if_high_speed}
-        index_if_type = {x.oid_index: x.value for x in if_type}
-        index_if_phys_addr = {x.oid_index: x.value for x in if_phys_addr}
-        index_if_admin = {x.oid_index: x.value for x in if_admin}
-        index_if_oper = {x.oid_index: x.value for x in if_oper}
+        index_if_index = {x[0]: x[1] for x in if_index}
+        index_if_name = {x[0]: x[1] for x in if_name}
+        index_if_descr = {x[0]: x[1] for x in if_descr}
+        index_if_mtu = {x[0]: x[1] for x in if_mtu}
+        index_if_speed = {x[0]: x[1] for x in if_speed}
+        index_if_high_speed = {x[0]: x[1] for x in if_high_speed}
+        index_if_type = {x[0]: x[1] for x in if_type}
+        index_if_phys_addr = {x[0]: x[1] for x in if_phys_addr}
+        index_if_admin = {x[0]: x[1] for x in if_admin}
+        index_if_oper = {x[0]: x[1] for x in if_oper}
         index_if_addr_index = defaultdict(list)
-        index_if_addr_netmask = {x.oid_index: x.value for x in if_addr_netmask}
+        index_if_addr_netmask = {x[0]: x[1] for x in if_addr_netmask}
         for x in if_addr_index:
-            netmask = index_if_addr_netmask[x.oid_index]
-            index_if_addr_index[x.value].append(ip_interface(f"{x.oid_index}/{netmask}"))
+            netmask = index_if_addr_netmask[x[0]]
+            index_if_addr_index[x[1]].append(ip_interface(f"{x[0]}/{netmask}"))
         return [
             Interface(
                 if_index=int(x),
-                if_name=index_if_name.get(x),
+                if_name=index_if_name[x],
                 if_descr=index_if_descr.get(x),
                 if_mtu=int(index_if_mtu.get(x)),
                 if_speed=int(index_if_speed.get(x)),
@@ -198,29 +217,25 @@ class SnmpFactory:
         """
         try:
             local_chassis_id = self.chassis_id
-            local_if_name = self.session.bulkwalk(consts.lldpLoPortId.oid, max_repetitions=self.snmp_max_repetitions)
-            local_if_descr = self.session.bulkwalk(
-                consts.lldpLocPortDesc.oid, max_repetitions=self.snmp_max_repetitions
-            )
-            remote_chassis_id = self.session.bulkwalk(
+            local_if_name = self.session.getbulk(consts.lldpLoPortId.oid, max_repetitions=self.snmp_max_repetitions)
+            local_if_descr = self.session.getbulk(consts.lldpLocPortDesc.oid, max_repetitions=self.snmp_max_repetitions)
+            remote_chassis_id = self.session.getbulk(
                 consts.lldpRemChassisId.oid, max_repetitions=self.snmp_max_repetitions
             )
-            remote_hostname = self.session.bulkwalk(
-                consts.lldpRemSysName.oid, max_repetitions=self.snmp_max_repetitions
-            )
-            remote_if_name = self.session.bulkwalk(consts.lldpRemPortId.oid, max_repetitions=self.snmp_max_repetitions)
-            remote_if_descr = self.session.bulkwalk(
+            remote_hostname = self.session.getbulk(consts.lldpRemSysName.oid, max_repetitions=self.snmp_max_repetitions)
+            remote_if_name = self.session.getbulk(consts.lldpRemPortId.oid, max_repetitions=self.snmp_max_repetitions)
+            remote_if_descr = self.session.getbulk(
                 consts.lldpRemPortDesc.oid, max_repetitions=self.snmp_max_repetitions
             )
-        except EzSNMPError as e:
+        except SnmpError as e:
             self.exceptions.append(DiscoveryException(item="lldp_neighbors", exception=str(e)))
             return []
-        index_local_if_name = {x.oid.split(".")[-1]: x.value for x in local_if_name}
-        index_local_if_descr = {x.oid.split(".")[-1]: x.value for x in local_if_descr}
-        index_remote_chassis_id = {x.oid.split(".")[-2]: mac_address_validator(x.value) for x in remote_chassis_id}
-        index_remote_hostname = {x.oid.split(".")[-2]: x.value for x in remote_hostname}
-        index_remote_if_name = {x.oid.split(".")[-2]: x.value for x in remote_if_name}
-        index_remote_if_descr = {x.oid.split(".")[-2]: x.value for x in remote_if_descr}
+        index_local_if_name = {x[0].split(".")[-1]: x[1] for x in local_if_name}
+        index_local_if_descr = {x[0].split(".")[-1]: x[1] for x in local_if_descr}
+        index_remote_chassis_id = {x[0].split(".")[-2]: mac_address_validator(x[1]) for x in remote_chassis_id}
+        index_remote_hostname = {x[0].split(".")[-2]: x[1] for x in remote_hostname}
+        index_remote_if_name = {x[0].split(".")[-2]: x[1] for x in remote_if_name}
+        index_remote_if_descr = {x[0].split(".")[-2]: x[1] for x in remote_if_descr}
         return [
             LldpNeighbor(
                 local_chassis_id=local_chassis_id,
@@ -246,22 +261,22 @@ class SnmpFactory:
         so it may won't work for huawei in default factory.
         """
         try:
-            ent_phy_class = self.session.bulkwalk(consts.entPhysicalClass.oid)
-            index_ent_phy_class = {x.oid.split(".")[-1]: x.value for x in ent_phy_class if int(x.value) == 3}  # noqa: PLR2004
+            ent_phy_class = self.session.getbulk(consts.entPhysicalClass.oid)
+            index_ent_phy_class = {x[0].split(".")[-1]: x[1] for x in ent_phy_class if int(x[1]) == 3}  # noqa: PLR2004
             oids = list(index_ent_phy_class.keys())
             if not oids:
                 return []
-            ent_phy_descr = self.session.get([consts.entPhysicalDescr.oid + "." + x for x in oids])
-            ent_phy_name = self.session.get([consts.entPhysicalName.oid + "." + x for x in oids])
-            ent_phy_software = self.session.get([consts.entPhysicalSoftwareRev.oid + "." + x for x in oids])
-            ent_phy_serial = self.session.get([consts.entPhysicalSerialNum.oid + "." + x for x in oids])
-        except EzSNMPError as e:
+            ent_phy_descr = self.session.get_many([consts.entPhysicalDescr.oid + "." + x for x in oids])
+            ent_phy_name = self.session.get_many([consts.entPhysicalName.oid + "." + x for x in oids])
+            ent_phy_software = self.session.get_many([consts.entPhysicalSoftwareRev.oid + "." + x for x in oids])
+            ent_phy_serial = self.session.get_many([consts.entPhysicalSerialNum.oid + "." + x for x in oids])
+        except SnmpError as e:
             self.exceptions.append(DiscoveryException(item="entities", exception=str(e)))
             return []
-        index_ent_phy_descr = {x.oid.split(".")[-1]: x.value for x in ent_phy_descr}
-        index_ent_phy_name = {x.oid.split(".")[-1]: x.value for x in ent_phy_name}
-        index_ent_phy_software = {x.oid.split(".")[-1]: x.value for x in ent_phy_software}
-        index_ent_phy_serial = {x.oid.split(".")[-1]: x.value for x in ent_phy_serial}
+        index_ent_phy_descr = {x[0].split(".")[-1]: x[1] for x in ent_phy_descr}
+        index_ent_phy_name = {x[0].split(".")[-1]: x[1] for x in ent_phy_name}
+        index_ent_phy_software = {x[0].split(".")[-1]: x[1] for x in ent_phy_software}
+        index_ent_phy_serial = {x[0].split(".")[-1]: x[1] for x in ent_phy_serial}
         return [
             Entity(
                 ent_physical_class=int(x),
@@ -296,28 +311,28 @@ class SnmpFactory:
             dict[int, list[str]]: dict[if_index, list[mac_address]]
         """
         try:
-            dot1d_base_port_index = self.session.bulkwalk(
-                oids=consts.dot1dBasePortIfIndex.oid, max_repetitions=self.snmp_max_repetitions
+            dot1d_base_port_index = self.session.getbulk(
+                oid=consts.dot1dBasePortIfIndex[0], max_repetitions=self.snmp_max_repetitions
             )
-            dot1d_tp_fdb_address = self.session.bulkwalk(
-                oids=consts.dot1dTpFdbAddress.oid, max_repetitions=self.snmp_max_repetitions
+            dot1d_tp_fdb_address = self.session.getbulk(
+                oid=consts.dot1dTpFdbAddress.oid, max_repetitions=self.snmp_max_repetitions
             )
-            dot1d_tp_fdb_port = self.session.bulkwalk(
-                oids=consts.dot1dTpFdbPort.oid, max_repetitions=self.snmp_max_repetitions
+            dot1d_tp_fdb_port = self.session.getbulk(
+                oid=consts.dot1dTpFdbPort.oid, max_repetitions=self.snmp_max_repetitions
             )
-        except EzSNMPError as e:
+        except SnmpError as e:
             self.exceptions.append(DiscoveryException(item="mac_address_table", exception=str(e)))
             return {}
-        index_dot1d_base_port_index = {x.oid.split(".")[-1]: x.value for x in dot1d_base_port_index}
+        index_dot1d_base_port_index = {x[0].split(".")[-1]: x[1] for x in dot1d_base_port_index}
         index_dot1d_base_port_index["0"] = "0"
         index_dot1d_tp_fdb_address = {}
         for x in dot1d_tp_fdb_address:
-            index = ".".join(x.oid.split(".")[-6:])
-            mac_address = mac_address_validator(x.value, True)
+            index = ".".join(x[0].split(".")[-6:])
+            mac_address = mac_address_validator(x[1], True)
             if not mac_address:
                 continue
             index_dot1d_tp_fdb_address[index] = mac_address
-        index_dot1d_tp_fdb_port = {".".join(x.oid.split(".")[-6:]): x.value for x in dot1d_tp_fdb_port}
+        index_dot1d_tp_fdb_port = {".".join(x[0].split(".")[-6:]): x[1] for x in dot1d_tp_fdb_port}
         results = defaultdict(list)
         for port_index, mac_address in index_dot1d_tp_fdb_address.items():
             results[int(index_dot1d_base_port_index[index_dot1d_tp_fdb_port[port_index]])].append(mac_address)
@@ -326,13 +341,13 @@ class SnmpFactory:
     @property
     def arp_table(self) -> dict[str, str]:
         try:
-            arp_table = self.session.bulkwalk(
-                oids=consts.ipNetToMediaPhysAddress.oid, max_repetitions=self.snmp_max_repetitions
+            arp_table = self.session.getbulk(
+                oid=consts.ipNetToMediaPhysAddress.oid, max_repetitions=self.snmp_max_repetitions
             )
-        except EzSNMPError as e:
+        except SnmpError as e:
             self.exceptions.append(DiscoveryException(item="arp_table", exception=str(e)))
             return {}
-        return {".".join(x.oid_index.split(".")[-4:]): mac_address_validator(x.value, True) for x in arp_table}
+        return {".".join(x[0].split(".")[-4:]): mac_address_validator(x[1], True) for x in arp_table}
 
     def discovery(self, items: list[DiscoveryItem] | None = None) -> SnmpDiscoveryData:
         """

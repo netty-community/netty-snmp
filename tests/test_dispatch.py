@@ -1,3 +1,5 @@
+from gufo.snmp import SnmpVersion
+
 from netty_snmp import DispatchSnmpFactory, consts
 
 
@@ -5,7 +7,7 @@ def test_dispatch():
     factory = DispatchSnmpFactory(
         prefix="192.168.1.0/26",
         port=161,
-        version=consts.SnmpVersion.v2c,
+        version=SnmpVersion.v2c,
         community="public",
         snmp_max_repetitions=consts.SNMP_MAX_REPETITIONS,
         max_workers=64,

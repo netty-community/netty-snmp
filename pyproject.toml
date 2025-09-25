@@ -26,8 +26,9 @@ classifiers = [
 
 dependencies = [
     "tcppinglib>=2.0.3",
-    "ezsnmp>=1.0.0rc3",
+    "ezsnmp>=2.0.1",
     "icmplib>=3.0.4",
+    "gufo-snmp>=0.9.1",
 ]
 readme = "README.md"
 requires-python = ">= 3.11"
