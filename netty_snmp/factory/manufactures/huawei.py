@@ -1,8 +1,8 @@
 from gufo.snmp import SnmpError, SnmpVersion
 
-from netty_snmp._types import DiscoveryException, StackMember
 from netty_snmp.factory import consts
 from netty_snmp.factory.snmp_factory import SnmpFactory, SnmpV3Params
+from netty_snmp.types import DiscoveryException, StackMember
 from netty_snmp.utils import mac_address_validator
 
 

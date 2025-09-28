@@ -5,8 +5,8 @@ from typing import Any, Literal, TypedDict
 from gufo.snmp import Aes128Key, DesKey, Md5Key, Sha1Key, SnmpError, SnmpVersion, User
 from gufo.snmp.sync_client import SnmpSession
 
-from netty_snmp._types import DiscoveryException, DiscoveryItem, Entity, Interface, LldpNeighbor, SnmpDiscoveryData
 from netty_snmp.factory import consts
+from netty_snmp.types import DiscoveryException, DiscoveryItem, Entity, Interface, LldpNeighbor, SnmpDiscoveryData
 from netty_snmp.utils import bytes_to_hex, extract_if_index, mac_address_validator
 
 

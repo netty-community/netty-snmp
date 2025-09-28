@@ -1,6 +1,6 @@
 from enum import IntEnum
 
-from netty_snmp._types import SnmpItem
+from netty_snmp.types import SnmpItem
 
 SNMP_DEFAULT_PORT = 161
 SNMP_DEFAULT_COMMUNITY = "public"

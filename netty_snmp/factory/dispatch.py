@@ -7,15 +7,6 @@ from gufo.snmp.sync_client import SnmpSession
 from icmplib import ping
 from tcppinglib import tcpping
 
-from netty_snmp._types import (
-    DeviceType,
-    DiscoveryData,
-    DiscoveryException,
-    DiscoveryItem,
-    DiscoveryResponse,
-    DispatchItem,
-    IPvANyNetwork,
-)
 from netty_snmp.device_type.device_types import Platform, get_device_type
 from netty_snmp.factory import consts
 from netty_snmp.factory.manufactures.arista import AristaSnmpFactory
@@ -28,6 +19,15 @@ from netty_snmp.factory.manufactures.juniper import JuniperSnmpFactory
 from netty_snmp.factory.manufactures.paloalto import PaloAltoSnmpFactory
 from netty_snmp.factory.manufactures.ruijie import RuijieSnmpFactory
 from netty_snmp.factory.snmp_factory import SnmpFactory, SnmpV3Params, SnmpVersionError
+from netty_snmp.types import (
+    DeviceType,
+    DiscoveryData,
+    DiscoveryException,
+    DiscoveryItem,
+    DiscoveryResponse,
+    DispatchItem,
+    IPvANyNetwork,
+)
 
 
 def get_factory(platform: Platform) -> type[SnmpFactory]:

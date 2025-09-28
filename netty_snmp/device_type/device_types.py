@@ -1,6 +1,5 @@
 from enum import StrEnum
 
-from netty_snmp._types import DeviceType
 from netty_snmp.device_type.manufactures.a10 import A10_DEVICE_TYPES
 from netty_snmp.device_type.manufactures.arista import ARISTA_DEVICE_TYPES
 from netty_snmp.device_type.manufactures.aruba import ARUBA_DEVICE_TYPES
@@ -18,6 +17,7 @@ from netty_snmp.device_type.manufactures.ruijie import RUIJIE_DEVICE_TYPES
 from netty_snmp.device_type.manufactures.tp_link import TP_LINK_DEVICE_TYPES
 from netty_snmp.device_type.manufactures.zte import ZTE_DEVICE_TYPES
 from netty_snmp.factory.consts import UNKNOWN_MODEL, UNKNOWN_PLATFORM
+from netty_snmp.types import DeviceType
 
 
 class Manufacturer(StrEnum):

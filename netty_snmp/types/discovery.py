@@ -1,6 +1,12 @@
 from ipaddress import IPv4Network, IPv6Network
 from typing import Literal, NamedTuple, TypedDict
 
+from netty_snmp.types.device import Entity, StackMember
+from netty_snmp.types.interface import Interface
+from netty_snmp.types.lldp import LldpNeighbor
+from netty_snmp.types.mac_addr import MacAddressTableEntry
+from netty_snmp.types.vlan import Vlan
+
 type IPvANyNetwork = IPv4Network | IPv6Network
 
 type DiscoveryItem = Literal[
@@ -48,55 +54,6 @@ class SnmpItem(NamedTuple):
         return type_mapping[self.value_type]
 
 
-class Interface(TypedDict):
-    if_index: int
-    if_name: str
-    if_descr: str
-    if_type: int
-    if_mtu: int
-    if_speed: int
-    if_high_speed: int
-    if_phys_address: str
-    if_admin_status: str
-    if_oper_status: str
-    if_ip_address: list[str]
-    if_port_mode: str | None
-
-
-class LldpNeighbor(TypedDict):
-    local_chassis_id: str
-    local_hostname: str
-    local_if_name: str
-    local_if_descr: str
-    remote_chassis_id: str
-    remote_hostname_id: str
-    remote_if_name: str
-    remote_if_descr: str
-
-
-class Entity(TypedDict):
-    ent_physical_class: int
-    ent_physical_descr: str
-    ent_physical_name: str
-    ent_physical_software_rev: str
-    ent_physical_serial_num: str
-
-
-class StackMember(TypedDict):
-    id: int
-    priority: int
-    role: str
-    mac_address: str
-
-
-class Vlan(TypedDict):
-    vlan_id: int
-    vlan_name: str
-    if_index: int
-    network: str | None
-    gateway: str | None
-
-
 class DiscoveryException(TypedDict):
     item: DispatchItem | DiscoveryItem
     exception: str
@@ -109,10 +66,11 @@ class SnmpDiscoveryData(TypedDict, total=False):
     chassis_id: str | None
     interfaces: list[Interface]
     lldp_neighbors: list[LldpNeighbor]
+    entities: list[Entity]
     stack: list[StackMember]
     vlans: list[Vlan]
-    mac_address_table: dict[int, list[str]] | None
-    arp_table: dict[str, str] | None
+    mac_address_table: list[MacAddressTableEntry]
+    arp_table: list[MacAddressTableEntry]
     prefixes: list[dict] | None
     routes: list[dict] | None
     exceptions: list[DiscoveryException]
