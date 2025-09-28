@@ -16,8 +16,6 @@ coverage==7.6.0
     # via pytest-cov
 distlib==0.3.8
     # via virtualenv
-ezsnmp==2.0.1
-    # via netty-snmp
 filelock==3.15.4
     # via virtualenv
 gufo-snmp==0.9.1

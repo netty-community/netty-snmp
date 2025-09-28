@@ -26,7 +26,6 @@ classifiers = [
 
 dependencies = [
     "tcppinglib>=2.0.3",
-    "ezsnmp>=2.0.1",
     "icmplib>=3.0.4",
     "gufo-snmp>=0.9.1",
 ]

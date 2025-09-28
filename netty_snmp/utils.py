@@ -12,10 +12,6 @@ def mac_address_validator(mac: None, strict: bool = False) -> None: ...
 def mac_address_validator(mac: str, strict: bool = False) -> str: ...
 
 
-@overload
-def mac_address_validator(mac: str, strict: bool = True) -> str | None: ...
-
-
 def mac_address_validator(mac: str | None, strict: bool = False) -> str | None:
     """
     Validates the given MAC address. if given MAC address is not valid, it will be returned as it is.
@@ -37,3 +33,30 @@ def mac_address_validator(mac: str | None, strict: bool = False) -> str | None:
     if re.match(_mac_address_re, input_mac):
         return ":".join(input_mac[i : i + 2] for i in range(0, len(input_mac), 2)).lower()
     return mac
+
+
+def bytes_to_hex(data: bytes) -> str:
+    """
+    Converts a bytes object to a hexadecimal string.
+
+    Args:
+        data (bytes): The bytes object to be converted.
+
+    Returns:
+        str: The hexadecimal string representation of the input bytes.
+    """
+    return ":".join(f"{b:02x}" for b in data)
+
+
+def extract_if_index(oid: str, value_oid: str) -> str:
+    """
+    Extracts the interface index from an OID.
+
+    Args:
+        oid (str): The OID string.
+        value_oid (str): The value OID string.
+
+    Returns:
+        int: The extracted interface index.
+    """
+    return value_oid.split(oid)[1]

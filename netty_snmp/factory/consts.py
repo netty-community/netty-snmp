@@ -11,12 +11,6 @@ UNKNOWN_MODEL = "Unknown"
 UNKNOWN_PORT_MODE = "Unknown"
 
 
-class SnmpVersion(IntEnum):
-    v1 = 1
-    v2c = 2
-    v3 = 3
-
-
 class StackRole(IntEnum):
     Master = 1
     Member = 2
@@ -146,6 +140,7 @@ ifPhysAddr = SnmpItem(
     description="The ifPhysAddr value for the interface.",
     value_type="str",
     value_mapping=None,
+    to_hex=True,
 )
 
 ifAdminStatus = SnmpItem(

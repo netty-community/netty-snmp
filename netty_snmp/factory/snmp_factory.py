@@ -7,7 +7,7 @@ from gufo.snmp.sync_client import SnmpSession
 
 from netty_snmp._types import DiscoveryException, DiscoveryItem, Entity, Interface, LldpNeighbor, SnmpDiscoveryData
 from netty_snmp.factory import consts
-from netty_snmp.utils import mac_address_validator
+from netty_snmp.utils import bytes_to_hex, extract_if_index, mac_address_validator
 
 
 class SnmpVersionError(Exception):
@@ -46,14 +46,14 @@ class SnmpFactory:
         :param v3_params: SNMP v3 params
         :param snmp_max_repetitions: SNMP max repetitions for getbulk
         """
-        self.ip = ip
-        self.port = port
-        self.version = version
-        self.community = community
-        self.v3_params = v3_params
-        self.session = self._session()
+        self.ip: str = ip
+        self.port: int = port
+        self.version: SnmpVersion = version
+        self.community: str | None = community
+        self.v3_params: SnmpV3Params | None = v3_params
+        self.session: SnmpSession = self._session()
         self.exceptions: list[DiscoveryException] = []
-        self.snmp_max_repetitions = snmp_max_repetitions
+        self.snmp_max_repetitions: int = snmp_max_repetitions
 
     def get_auth_key(self) -> Sha1Key | Md5Key | None:
         if not self.v3_params:
@@ -79,7 +79,7 @@ class SnmpFactory:
 
     def _session(self) -> SnmpSession:
         """create session for snmp query"""
-        if self.version == consts.SnmpVersion.v2c and self.community:
+        if self.version == SnmpVersion.v2c and self.community:
             return SnmpSession(
                 addr=self.ip,
                 port=self.port,
@@ -105,10 +105,12 @@ class SnmpFactory:
         collect network device hostname
         """
         try:
-            return self.session.get(consts.sysName.oid)  # type: ignore  # noqa: PGH003
+            result = self.session.get(consts.sysName.oid)
+            if result and isinstance(result, str):
+                return result
         except SnmpError as e:
             self.exceptions.append(DiscoveryException(item="hostname", exception=str(e)))
-            return None
+        return None
 
     @property
     def sys_descr(self) -> str | None:
@@ -117,10 +119,12 @@ class SnmpFactory:
         without structured data format
         """
         try:
-            return self.session.get(consts.sysDescr.oid)
+            result = self.session.get(consts.sysDescr.oid)
+            if result and isinstance(result, str):
+                return result
         except SnmpError as e:
             self.exceptions.append(DiscoveryException(item="sys_descr", exception=str(e)))
-            return None
+        return None
 
     @property
     def uptime(self) -> str | None:
@@ -128,10 +132,12 @@ class SnmpFactory:
         collect network device uptime`
         """
         try:
-            return self.session.get(consts.sysUpTime.oid)
+            result = self.session.get(consts.sysUpTime.oid)
+            if result and isinstance(result, str):
+                return result
         except SnmpError as e:
             self.exceptions.append(DiscoveryException(item="uptime", exception=str(e)))
-            return None
+        return None
 
     @property
     def chassis_id(self) -> str | None:
@@ -140,10 +146,17 @@ class SnmpFactory:
         Special configuration for Huawei: snmp should include iso view and mib-2
         """
         try:
-            return mac_address_validator(self.session.get(consts.lldpLocChassisId.oid))
+            result = self.session.get(consts.lldpLocChassisId.oid)
+            if result:
+                if isinstance(result, bytes):
+                    if consts.lldpLocChassisId.to_hex:
+                        return mac_address_validator(bytes_to_hex(result))
+                    return result.decode("utf-8", errors="ignore")
+                if isinstance(result, str):
+                    return mac_address_validator(result)
         except SnmpError as e:
             self.exceptions.append(DiscoveryException(item="chassis_id", exception=str(e)))
-            return None
+        return None
 
     @property
     def if_port_mode(self) -> dict[str, str]:
@@ -158,7 +171,7 @@ class SnmpFactory:
         collect interfaces via `IF-MIB`, if filtering by the items, implement it the manufacturer factory
         """
         try:
-            if_index = self.session.getbulk(consts.ifIndex[0], max_repetitions=self.snmp_max_repetitions)
+            if_index = self.session.getbulk(consts.ifIndex.oid, max_repetitions=self.snmp_max_repetitions)
             if_name = self.session.getbulk(consts.ifDescr.oid, max_repetitions=self.snmp_max_repetitions)
             if_descr = self.session.getbulk(consts.ifAlias.oid, max_repetitions=self.snmp_max_repetitions)
             if_mtu = self.session.getbulk(consts.ifMtu.oid, max_repetitions=self.snmp_max_repetitions)
@@ -168,31 +181,37 @@ class SnmpFactory:
             if_phys_addr = self.session.getbulk(consts.ifPhysAddr.oid, max_repetitions=self.snmp_max_repetitions)
             if_admin = self.session.getbulk(consts.ifAdminStatus.oid, max_repetitions=self.snmp_max_repetitions)
             if_oper = self.session.getbulk(consts.ifOperStatus.oid, max_repetitions=self.snmp_max_repetitions)
-            if_addr_index = self.session.getbulk(consts.ifAdEntIfIndex[0], max_repetitions=self.snmp_max_repetitions)
+            if_addr_index = self.session.getbulk(consts.ifAdEntIfIndex.oid, max_repetitions=self.snmp_max_repetitions)
             if_addr_netmask = self.session.getbulk(consts.ifAdEntNetMask.oid, max_repetitions=self.snmp_max_repetitions)
             if_port_mode = self.if_port_mode
         except SnmpError as e:
             self.exceptions.append(DiscoveryException(item="interfaces", exception=str(e)))
             return []
-        index_if_index = {x[0]: x[1] for x in if_index}
-        index_if_name = {x[0]: x[1] for x in if_name}
-        index_if_descr = {x[0]: x[1] for x in if_descr}
-        index_if_mtu = {x[0]: x[1] for x in if_mtu}
-        index_if_speed = {x[0]: x[1] for x in if_speed}
-        index_if_high_speed = {x[0]: x[1] for x in if_high_speed}
-        index_if_type = {x[0]: x[1] for x in if_type}
-        index_if_phys_addr = {x[0]: x[1] for x in if_phys_addr}
-        index_if_admin = {x[0]: x[1] for x in if_admin}
-        index_if_oper = {x[0]: x[1] for x in if_oper}
-        index_if_addr_index = defaultdict(list)
+        index_if_index = {extract_if_index(consts.ifIndex.oid, x[0]): x[1] for x in if_index}
+        index_if_name = {extract_if_index(consts.ifDescr.oid, x[0]): x[1] for x in if_name}
+        index_if_descr = {extract_if_index(consts.ifAlias.oid, x[0]): x[1] for x in if_descr}
+        index_if_mtu = {extract_if_index(consts.ifMtu.oid, x[0]): x[1] for x in if_mtu}
+        index_if_speed = {extract_if_index(consts.ifSpeed.oid, x[0]): x[1] for x in if_speed}
+        index_if_high_speed = {extract_if_index(consts.ifHighSpeed.oid, x[0]): x[1] for x in if_high_speed}
+        index_if_type = {extract_if_index(consts.ifType.oid, x[0]): x[1] for x in if_type}
+        index_if_phys_addr = {
+            extract_if_index(consts.ifPhysAddr.oid, x[0]): bytes_to_hex(x[1])
+            for x in if_phys_addr
+            if isinstance(x[1], bytes)
+        }
+        index_if_admin = {extract_if_index(consts.ifAdminStatus.oid, x[0]): x[1] for x in if_admin}
+        index_if_oper = {extract_if_index(consts.ifOperStatus.oid, x[0]): x[1] for x in if_oper}
+        index_if_addr_index: dict[str, list[str]] = defaultdict(list)
         index_if_addr_netmask = {x[0]: x[1] for x in if_addr_netmask}
         for x in if_addr_index:
+            if x[0] not in index_if_addr_index:
+                continue
             netmask = index_if_addr_netmask[x[0]]
             index_if_addr_index[x[1]].append(ip_interface(f"{x[0]}/{netmask}"))
         return [
             Interface(
-                if_index=int(x),
-                if_name=index_if_name[x],
+                if_index=int(x.split(".")[1]),
+                if_name=str(index_if_name[x]),
                 if_descr=index_if_descr.get(x),
                 if_mtu=int(index_if_mtu.get(x)),
                 if_speed=int(index_if_speed.get(x)),
@@ -205,7 +224,7 @@ class SnmpFactory:
                 if_port_mode=if_port_mode.get(x, consts.UNKNOWN_PORT_MODE),
             )
             for x in index_if_index
-            if x is not None
+            if if_index is not None
         ]
 
     @property
@@ -232,7 +251,9 @@ class SnmpFactory:
             return []
         index_local_if_name = {x[0].split(".")[-1]: x[1] for x in local_if_name}
         index_local_if_descr = {x[0].split(".")[-1]: x[1] for x in local_if_descr}
-        index_remote_chassis_id = {x[0].split(".")[-2]: mac_address_validator(x[1]) for x in remote_chassis_id}
+        index_remote_chassis_id = {
+            x[0].split(".")[-2]: mac_address_validator(bytes_to_hex(x[1])) for x in remote_chassis_id
+        }
         index_remote_hostname = {x[0].split(".")[-2]: x[1] for x in remote_hostname}
         index_remote_if_name = {x[0].split(".")[-2]: x[1] for x in remote_if_name}
         index_remote_if_descr = {x[0].split(".")[-2]: x[1] for x in remote_if_descr}
@@ -256,7 +277,7 @@ class SnmpFactory:
         """
         collect entities via `ENTITY-MIB`
         basically: chassis(3) should be the main module of device.
-        but fuck huawei (3 or 9(module) for different product lines) because its unstandard implementation
+        but fuck huawei (3 or 9(module) for different product lines) because its un-standard implementation
         see value mapping in `consts.py`: ENTITY_PHYSICAL_CLASS_MAPPING
         so it may won't work for huawei in default factory.
         """
@@ -347,7 +368,7 @@ class SnmpFactory:
         except SnmpError as e:
             self.exceptions.append(DiscoveryException(item="arp_table", exception=str(e)))
             return {}
-        return {".".join(x[0].split(".")[-4:]): mac_address_validator(x[1], True) for x in arp_table}
+        return {".".join(x[0].split(".")[-4:]): mac_address_validator(bytes_to_hex(x[1]), True) for x in arp_table}
 
     def discovery(self, items: list[DiscoveryItem] | None = None) -> SnmpDiscoveryData:
         """

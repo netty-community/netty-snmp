@@ -63,14 +63,14 @@ class DispatchSnmpFactory:
         snmp_max_repetitions: int = consts.SNMP_MAX_REPETITIONS,
         max_workers: int = 16,
     ) -> None:
-        self.prefix = self.str_to_prefix(prefix)
-        self.port = port
-        self.version = version
-        self.community = community
-        self.v3_params = v3_params
-        self.max_workers = max_workers
+        self.prefix: IPvANyNetwork = self.str_to_prefix(prefix)
+        self.port: int = port
+        self.version: SnmpVersion = version
+        self.community: str | None = community
+        self.v3_params: SnmpV3Params | None = v3_params
+        self.max_workers: int = max_workers
         self.exceptions: dict[str, list[DiscoveryException]] = defaultdict(list)
-        self.snmp_max_repetitions = snmp_max_repetitions
+        self.snmp_max_repetitions: int = snmp_max_repetitions
 
     def str_to_prefix(self, prefix: str) -> IPvANyNetwork:
         if "/" not in prefix:
@@ -85,7 +85,7 @@ class DispatchSnmpFactory:
 
     def snmp_reachable(self, session: SnmpSession) -> bool:
         try:
-            result = session.getnext(".1")
+            result = session.getnext("1.3.6.1.2.1.1.1.0")
         except ConnectionError:
             result = None
         return result is not None
@@ -113,7 +113,13 @@ class DispatchSnmpFactory:
         return None
 
     def sys_object_id(self, session: SnmpSession) -> str | None:
-        return session.get(consts.sysObjectID.oid)
+        try:
+            result = session.get(consts.sysObjectID.oid)
+            if result and isinstance(result, str):
+                return result
+        except SnmpError as e:
+            self.exceptions["sys_object_id"].append(DiscoveryException(item="sys_object_id", exception=str(e)))
+        return None
 
     def device_type(self, sys_object_id: str) -> "DeviceType":
         device_type = get_device_type(sys_object_id)
@@ -126,7 +132,7 @@ class DispatchSnmpFactory:
         return device_type
 
     def get_snmp_session(self, ip: str) -> SnmpSession:
-        if self.version == consts.SnmpVersion.v2c and self.community:
+        if self.version == SnmpVersion.v2c and self.community:
             return SnmpSession(
                 addr=ip,
                 port=self.port,
@@ -175,7 +181,7 @@ class DispatchSnmpFactory:
             return discovery_response
 
         device_type = self.device_type(sys_object_id)
-        factory = get_factory(device_type["platform"])  # type: ignore  # noqa: PGH003
+        factory = get_factory(Platform(device_type["platform"]))
         device_data = factory(
             ip=ip_address,
             port=self.port,
@@ -199,7 +205,7 @@ class DispatchSnmpFactory:
 
     @staticmethod
     def _is_icmp_reachable(ip_address: str) -> bool:
-        return ping(ip_address, count=2, interval=0.2, timeout=1, privileged=False).is_alive  # type: ignore  # noqa: PGH003
+        return ping(ip_address, count=2, interval=1, timeout=1, privileged=False).is_alive  # type: ignore  # noqa: PGH003
 
     @staticmethod
     def _is_ssh_reachable(ip_address: str) -> bool:

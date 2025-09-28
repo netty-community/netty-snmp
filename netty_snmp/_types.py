@@ -1,9 +1,9 @@
 from ipaddress import IPv4Network, IPv6Network
-from typing import Literal, NamedTuple, TypeAlias, TypedDict
+from typing import Literal, NamedTuple, TypedDict
 
-IPvANyNetwork: TypeAlias = IPv4Network | IPv6Network  # noqa: UP040
+type IPvANyNetwork = IPv4Network | IPv6Network
 
-DiscoveryItem: TypeAlias = Literal[  # noqa: UP040
+type DiscoveryItem = Literal[
     "hostname",
     "sys_descr",
     "chassis_id",
@@ -19,7 +19,7 @@ DiscoveryItem: TypeAlias = Literal[  # noqa: UP040
     "arp_table",
 ]
 
-DispatchItem: TypeAlias = Literal["sys_object_id"]  # noqa: UP040
+type DispatchItem = Literal["sys_object_id"]
 
 
 class DeviceType(TypedDict):
@@ -43,8 +43,8 @@ class SnmpItem(NamedTuple):
     value_mapping: dict[int, str] | None = None
     to_hex: bool = False
 
-    def get_value_type(self) -> str | int | float:
-        type_mapping = {"str": str, "int": int, "float": float}
+    def get_value_type(self) -> type[str] | type[int] | type[float] | type[bytes]:
+        type_mapping = {"str": str, "int": int, "float": float, "bytes": bytes}
         return type_mapping[self.value_type]
 
 
@@ -89,6 +89,14 @@ class StackMember(TypedDict):
     mac_address: str
 
 
+class Vlan(TypedDict):
+    vlan_id: int
+    vlan_name: str
+    if_index: int
+    network: str | None
+    gateway: str | None
+
+
 class DiscoveryException(TypedDict):
     item: DispatchItem | DiscoveryItem
     exception: str
@@ -101,8 +109,8 @@ class SnmpDiscoveryData(TypedDict, total=False):
     chassis_id: str | None
     interfaces: list[Interface]
     lldp_neighbors: list[LldpNeighbor]
-    stack: list[dict]
-    vlans: list[dict]
+    stack: list[StackMember]
+    vlans: list[Vlan]
     mac_address_table: dict[int, list[str]] | None
     arp_table: dict[str, str] | None
     prefixes: list[dict] | None

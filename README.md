@@ -37,7 +37,7 @@ from netty_snmp import DispatchSnmpFactory, consts
 dis = DispatchSnmpFactory(
     prefix="192.168.0.0/24",
     port=161,
-    version=consts.SnmpVersion.v2c, # via snmp v2c
+    version=SnmpVersion.v2c, # via snmp v2c
     community="public",
     max_workers=16, # concurrency for collection task, run in 16 threads
 )
@@ -48,7 +48,7 @@ print(dis.discovery())
 dis = DispatchSnmpFactory(
     prefix="192.168.0.0/32",
     port=161,
-    version=consts.SnmpVersion.v2c, # via snmp v2c
+    version=SnmpVersion.v2c, # via snmp v2c
     community="public",
     max_workers=16, # concurrency for collection task, run in 16 threads
 )
@@ -59,7 +59,7 @@ print(dis.discovery(["hostname", "interfaces"]))
 DispatchSnmpFactory(
     prefix="192.168.0.0/24",
     port=161,
-    version=consts.SnmpVersion.v3,
+    version=SnmpVersion.v3,
     v3_params=SnmpV3Params(
         security_username="admin",
         security_level="authNoPriv",
